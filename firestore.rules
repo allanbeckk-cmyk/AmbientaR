@@ -1,0 +1,263 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // =============================================
+    // Helper Functions
+    // =============================================
+    function getRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && getRole() == 'admin';
+    }
+
+    function isSupervisor() {
+      return isSignedIn() && getRole() == 'supervisor';
+    }
+    
+    function isManager() {
+        let role = getRole();
+        return isSignedIn() && (role == 'admin' || role == 'gestor' || role == 'supervisor');
+    }
+
+    function isClient() {
+        return isSignedIn() && getRole() == 'client';
+    }
+    
+     function isFinancial() {
+      return isSignedIn() && getRole() == 'financial';
+    }
+
+    function isSales() {
+        return isSignedIn() && getRole() == 'sales';
+    }
+    
+    function getUserProfile(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data;
+    }
+    
+    // =============================================
+    // Collection Rules
+    // =============================================
+
+    match /{document=**} {
+      allow read, write: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn(); // Allow any signed in user to list others for chat purposes
+      allow write: if isAdmin() || isSupervisor() || request.auth.uid == userId;
+    }
+
+    match /users/{userId}/notifications/{notificationId} {
+        allow read, write: if request.auth.uid == userId;
+    }
+
+    match /chats/{chatId} {
+      allow get, update: if isSignedIn() && request.auth.uid in resource.data.participants;
+      allow list: if isSignedIn() && request.query.where[0][2] == request.auth.uid; // Ensure user can only query their own chats
+      allow create: if isSignedIn() && request.auth.uid in request.resource.data.participants;
+
+      match /messages/{messageId} {
+        allow read, create: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow update: if isSignedIn() && request.resource.data.keys().hasOnly(['deletedFor']) && request.auth.uid in request.resource.data.deletedFor;
+        allow delete: if false; 
+      }
+    }
+
+    match /auditLogs/{logId} {
+      allow create: if isSignedIn();
+      allow read: if isSupervisor();
+    }
+    
+    match /oficios/{oficioId} {
+        allow read: if isSignedIn() && (isSupervisor() || resource.data.createdBy == request.auth.uid || resource.data.recipient == getUserProfile(request.auth.uid).name);
+        allow create: if isSignedIn() && request.resource.data.createdBy == request.auth.uid;
+        allow update, delete: if isSignedIn() && resource.data.createdBy == request.auth.uid && resource.data.status == 'Rascunho';
+    }
+
+    match /oficioCounters/{year} {
+        allow read, write: if isSignedIn();
+    }
+
+    match /clients/{clientId} {
+      allow read: if isSignedIn();
+      allow write: if isManager() || isSales() || isFinancial();
+    }
+    
+    match /fornecedores/{fornecedorId} {
+      allow read, write: if isFinancial() || isSupervisor() || isAdmin();
+    }
+    
+    match /services/{serviceId} {
+      allow read: if isSignedIn();
+      allow write: if isFinancial() || isSupervisor() || isAdmin();
+    }
+
+    match /empreendedores/{empreendedorId} {
+        allow read: if isSignedIn();
+        allow write: if isManager() || isSales() || isTechnical();
+    }
+    
+    match /projects/{projectId} {
+      allow read: if isSignedIn();
+      allow write: if isManager() || isSales() || isTechnical();
+    }
+    
+    match /faunaStudies/{studyId} {
+      allow read, write: if isSignedIn();
+    }
+    
+    match /inventories/{inventoryId} {
+      allow read, write: if isSignedIn();
+    }
+    
+    match /companySettings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /environmentalCompanies/{companyId} {
+        allow read, write: if isSignedIn();
+    }
+    
+    match /technicalResponsibles/{responsibleId} {
+        allow read, write: if isSignedIn();
+    }
+
+    match /licenses/{licenseId} {
+      allow get: if isSignedIn();
+      allow list: if isManager();
+      allow write: if isManager();
+    }
+
+    match /requests/{requestId} {
+      allow read, write: if isSignedIn();
+    }
+    
+    match /outorgas/{outorgaId} {
+      allow get: if isSignedIn();
+      allow list: if isManager();
+      allow write: if isManager();
+    }
+    
+    match /manualMonitoringLogs/{logId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /intervencoes/{intervencaoId} {
+        allow get: if isSignedIn();
+        allow list: if isManager();
+        allow write: if isManager();
+    }
+
+    match /inspections/{inspectionId} {
+        allow read, write: if isSignedIn();
+    }
+
+    match /condicionantes/{condicionanteId} {
+        allow get: if isSignedIn();
+        allow list: if isManager();
+        allow write: if isManager();
+    }
+
+    match /pradas/{pradaId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /ptrfs/{ptrfId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /rcas/{rcaId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /pcas/{pcaId} {
+      allow read, write: if isSignedIn();
+    }
+    
+    match /pias/{piaId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /eiaRimas/{eiaRimaId} {
+        allow read, write: if isSignedIn();
+    }
+
+    match /invoices/{invoiceId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isFinancial() || isSupervisor();
+    }
+
+    match /commercialProposals/{proposalId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isSales() || isSupervisor() || isFinancial();
+       allow update: if (isAdmin() || isFinancial()) || (
+          (isSales() || isSupervisor()) && 
+          !( 'status' in request.resource.data && 
+             (request.resource.data.status == 'Accepted' || request.resource.data.status == 'Rejected') &&
+             resource.data.status != request.resource.data.status
+          )
+      );
+    }
+
+    match /contracts/{contractId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isSales() || isSupervisor() || isFinancial();
+       allow update: if (isAdmin() || isFinancial()) || (
+          (isSales() || isSupervisor()) && 
+          !( 'status' in request.resource.data && 
+             request.resource.data.status == 'Aprovado' &&
+             resource.data.status != 'Aprovado'
+          )
+      );
+    }
+
+    match /appointments/{appointmentId} {
+        allow get: if isSignedIn() && (isSupervisor() || isFinancial() || resource.data.ownerId == request.auth.uid);
+        allow list: if isSignedIn();
+        allow write: if isSignedIn();
+    }
+
+    match /revenues/{revenueId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isFinancial();
+    }
+
+    match /expenses/{expenseId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isFinancial();
+    }
+
+    match /opportunities/{opportunityId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isSales() || isSupervisor();
+    }
+
+    match /contacts/{contactId} {
+      allow read, write: if isAdmin() || isSales() || isSupervisor();
+    }
+    
+     match /charcoalReports/{reportId} {
+        allow read, write: if isSignedIn();
+    }
+    
+    match /transporteResiduosReports/{reportId} {
+        allow read, write: if isSignedIn();
+    }
+    
+    match /dispensaPea/{dispensaId} {
+        allow read, write: if isSignedIn();
+    }
+  }
+}

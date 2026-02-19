@@ -1,0 +1,472 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Helper function to get the user's role from their profile in the 'users' collection.
+     * Caches the result for the duration of the request evaluation.
+     */
+    function getRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    /**
+     * @description Checks if the signed-in user has the 'admin' role.
+     */
+    function isAdmin() {
+      return request.auth != null && getRole() == 'admin';
+    }
+    
+    /**
+     * @description Checks if the user has a management role (admin, gestor, supervisor).
+     */
+    function isManager() {
+        let role = getRole();
+        return request.auth != null && (role == 'admin' || role == 'gestor' || role == 'supervisor');
+    }
+
+    /**
+     * @description Checks if the user is a client.
+     */
+    function isClient() {
+        return request.auth != null && getRole() == 'client';
+    }
+
+    /**
+     * @description Helper function to get the current user's profile data.
+     */
+    function getUserProfile(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data;
+    }
+    
+    /**
+     * @description Checks if the user is authorized to see a specific license.
+     * Clients can only see licenses linked to their empreendedores.
+     */
+    function canViewLicense(license) {
+      let userProfile = getUserProfile(request.auth.uid);
+      let empreendedorDoc = get(/databases/$(database)/documents/empreendedores/$(license.empreendedorId)).data;
+      
+      // Check if user's CPF or any of their CNPJs match the empreendedor's CPF/CNPJ
+      return (userProfile.cpf != null && userProfile.cpf == empreendedorDoc.cpfCnpj) ||
+             (userProfile.cnpjs != null && empreendedorDoc.cpfCnpj in userProfile.cnpjs);
+    }
+    
+     /**
+     * @description Checks if the user is authorized to see a specific water permit (outorga).
+     * Clients can only see outorgas linked to their empreendedores.
+     */
+    function canViewOutorga(outorga) {
+      let userProfile = getUserProfile(request.auth.uid);
+      let empreendedorDoc = get(/databases/$(database)/documents/empreendedores/$(outorga.empreendedorId)).data;
+      
+      // Check if user's CPF or any of their CNPJs match the empreendedor's CPF/CNPJ
+      return (userProfile.cpf != null && userProfile.cpf == empreendedorDoc.cpfCnpj) ||
+             (userProfile.cnpjs != null && empreendedorDoc.cpfCnpj in userProfile.cnpjs);
+    }
+
+    /**
+     * @description Checks if the signed-in user has the 'financial' role.
+     */
+    function isFinancial() {
+      return request.auth != null && getRole() == 'financial';
+    }
+
+     /**
+     * @description Checks if the signed-in user has the 'sales' role.
+     */
+    function isSales() {
+        return request.auth != null && getRole() == 'sales';
+    }
+
+    /**
+     * @description Checks if the signed-in user has the 'supervisor' role.
+     */
+    function isSupervisor() {
+      return request.auth != null && getRole() == 'supervisor';
+    }
+
+    /**
+     * @description Checks if the user is signed in.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    /**
+     * @description Checks if the user is authorized to perform technical inspections.
+     * Denies access to financial, client, and sales roles.
+     */
+    function isAuthorizedInspector() {
+      let role = getRole();
+      return isSignedIn() && role != 'financial' && role != 'client' && role != 'sales';
+    }
+    
+    /**
+     * @description Audit logs can be created by any signed-in user.
+     * Admins or supervisors can read any log.
+     * @path /databases/{database}/documents/auditLogs/{logId}
+     */
+    match /auditLogs/{logId} {
+      allow read: if isAdmin() || isSupervisor();
+      allow write: if isSignedIn();
+    }
+    
+     /**
+     * @description Defines access rules for 'oficios' collection.
+     * Admins and managers can read all. Clients can read ofícios addressed to them.
+     * Creating is for signed-in users. Updating/deleting drafts by creator. Admins can delete completed.
+     * @path /databases/{database}/documents/oficios/{oficioId}
+     */
+    match /oficios/{oficioId} {
+        allow read: if isSignedIn() && (isAdmin() || isSupervisor() || resource.data.createdBy == request.auth.uid || resource.data.recipient == getUserProfile(request.auth.uid).name);
+        allow create: if isSignedIn() && request.resource.data.createdBy == request.auth.uid;
+        allow update: if (isSignedIn() && request.resource.data.createdBy == request.auth.uid && resource.data.status == 'Rascunho') || isAdmin();
+        allow delete: if (isSignedIn() && request.resource.data.createdBy == request.auth.uid && resource.data.status == 'Rascunho') || isAdmin();
+    }
+    
+    /**
+     * @description Defines access rules for 'oficioCounters'.
+     * Only authenticated users can read/write to allow for transactional increments.
+     * @path /databases/{database}/documents/oficioCounters/{year}
+     */
+    match /oficioCounters/{year} {
+        allow read, write: if isSignedIn();
+    }
+
+    /**
+     * @description Allows users to manage their own profile and notifications. Admins and Supervisors can manage any user.
+     * Any authenticated user can list users (for chat functionality).
+     */
+    match /users/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow write: if isAdmin() || isSupervisor() || request.auth.uid == userId;
+
+      /**
+       * @description A user can read their own notifications. Admins can read any notifications.
+       */
+      match /notifications/{notificationId} {
+        allow read, write: if request.auth.uid == userId || isAdmin();
+      }
+    }
+    
+    /**
+     * @description Rules for chat functionality.
+     * A user can read/create/update chat documents and messages only if they are a participant.
+     */
+    match /chats/{chatId} {
+      allow get, update: if isSignedIn() && request.auth.uid in resource.data.participants;
+      // Admins/Supervisors can list all chats for monitoring. Others can only list their own.
+      allow list: if isAdmin() || isSupervisor() || (isSignedIn() && request.auth.uid in request.query.filters.participants);
+      allow create: if isSignedIn() && request.auth.uid in request.resource.data.participants;
+
+      match /messages/{messageId} {
+        allow read, create: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow update: if isSignedIn()
+                      && request.resource.data.keys().hasOnly(['deletedFor'])
+                      && request.resource.data.deletedFor.hasAny([request.auth.uid]);
+        allow delete: if false; 
+      }
+    }
+    
+    /**
+     * @description Allows any authenticated user to manage commercial client data.
+     * @path /databases/{database}/documents/clients/{clientId}
+     */
+    match /clients/{clientId} {
+      allow read, write: if isSignedIn();
+    }
+    
+    /**
+     * @description Allows any authenticated user to manage supplier data.
+     * @path /databases/{database}/documents/fornecedores/{fornecedorId}
+     */
+    match /fornecedores/{fornecedorId} {
+      allow read: if isAdmin() || isFinancial() || isSupervisor();
+      allow write: if isAdmin() || isFinancial() || isSupervisor();
+    }
+    
+    /**
+     * @description Rules for the service catalog.
+     * Read access for all authenticated users.
+     * Write access restricted to Admin, Financial, and Supervisor roles.
+     */
+    match /services/{serviceId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isFinancial() || isSupervisor();
+    }
+
+
+    /**
+     * @description Allows any authenticated user to manage technical empreendedor data.
+     * @path /databases/{database}/documents/empreendedores/{empreendedorId}
+     */
+    match /empreendedores/{empreendedorId} {
+        allow read, write: if isSignedIn();
+    }
+
+    /**
+     * @description Allows any authenticated user to manage fauna studies.
+     * @path /databases/{database}/documents/faunaStudies/{studyId}
+     */
+    match /faunaStudies/{studyId} {
+      allow read, write: if isSignedIn();
+    }
+
+    /**
+     * @description Allows any authenticated user to manage inventory projects.
+     * @path /databases/{database}/documents/inventories/{inventoryId}
+     */
+    match /inventories/{inventoryId} {
+      allow read, write: if isSignedIn();
+    }
+    
+     /**
+     * @description Allows public read on company settings for branding, but write access is restricted to admin.
+     * @path /databases/{database}/documents/companySettings/{settingId}
+     */
+    match /companySettings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    /**
+     * @description Allows any authenticated user to manage environmental companies.
+     * @path /databases/{database}/documents/environmentalCompanies/{companyId}
+     */
+    match /environmentalCompanies/{companyId} {
+        allow read, write: if isSignedIn();
+    }
+    
+    /**
+     * @description Allows any authenticated user to manage technical responsible people.
+     * @path /databases/{database}/documents/technicalResponsibles/{responsibleId}
+     */
+    match /technicalResponsibles/{responsibleId} {
+        allow read, write: if isSignedIn();
+    }
+
+    /**
+     * @description Allows any authenticated user to manage projects.
+     * @path /databases/{database}/documents/projects/{projectId}
+     */
+    match /projects/{projectId} {
+      allow read, write: if isSignedIn();
+    }
+
+    /**
+     * @description Defines access rules for the 'licenses' collection.
+     * Managers (admin, gestor, supervisor) have full write access.
+     * Any signed-in user can get a document if they have permission, but only managers can list all.
+     */
+    match /licenses/{licenseId} {
+      allow get: if isSignedIn();
+      allow list: if isManager() || isAdmin();
+      allow write: if isManager() || isAdmin();
+    }
+
+    /**
+     * @description Allows any authenticated user to manage new process requests.
+     * @path /databases/{database}/documents/requests/{requestId}
+     */
+    match /requests/{requestId} {
+      allow read, write: if isSignedIn();
+    }
+    
+    /**
+     * @description Allows managers to write and list all. Other signed-in users can read specific documents.
+     */
+    match /outorgas/{outorgaId} {
+      allow get: if isSignedIn();
+      allow list: if isManager() || isAdmin();
+      allow write: if isManager() || isAdmin();
+    }
+    
+    /**
+     * @description Allows any authenticated user to manage manual monitoring logs.
+     * @path /databases/{database}/documents/manualMonitoringLogs/{logId}
+     */
+    match /manualMonitoringLogs/{logId} {
+      allow read, write: if isSignedIn();
+    }
+
+    /**
+     * @description Allows managers to write and list all interventions. Other signed-in users can only read specific ones.
+     * @path /databases/{database}/documents/intervencoes/{intervencaoId}
+     */
+    match /intervencoes/{intervencaoId} {
+        allow get: if isSignedIn();
+        allow list: if isManager();
+        allow write: if isManager();
+    }
+
+    /**
+     * @description Allows any authenticated user to manage inspections.
+     * @path /databases/{database}/documents/inspections/{inspectionId}
+     */
+    match /inspections/{inspectionId} {
+        allow read, write: if isSignedIn();
+    }
+
+    /**
+     * @description Allows managers to write and list all conditions. Other signed-in users can only read specific ones.
+     * @path /databases/{database}/documents/condicionantes/{condicionanteId}
+     */
+    match /condicionantes/{condicionanteId} {
+        allow get: if isSignedIn();
+        allow list: if isManager();
+        allow write: if isManager();
+    }
+
+    /**
+     * @description Allows any authenticated user to manage PRADA forms.
+     * @path /databases/{database}/documents/pradas/{pradaId}
+     */
+    match /pradas/{pradaId} {
+      allow read, write: if isSignedIn();
+    }
+
+    /**
+     * @description Allows any authenticated user to manage PTRF forms.
+     * @path /databases/{database}/documents/ptrfs/{ptrfId}
+     */
+    match /ptrfs/{ptrfId} {
+      allow read, write: if isSignedIn();
+    }
+
+    /**
+     * @description Allows any authenticated user to manage RCA forms.
+     * @path /databases/{database}/documents/rcas/{rcaId}
+     */
+    match /rcas/{rcaId} {
+      allow read, write: if isSignedIn();
+    }
+
+    /**
+     * @description Allows any authenticated user to manage PCA forms.
+     * @path /databases/{database}/documents/pcas/{pcaId}
+     */
+    match /pcas/{pcaId} {
+      allow read, write: if isSignedIn();
+    }
+    
+    /**
+     * @description Allows any authenticated user to manage PIA forms.
+     * @path /databases/{database}/documents/pias/{piaId}
+     */
+    match /pias/{piaId} {
+      allow read, write: if isSignedIn();
+    }
+
+    /**
+     * @description Allows any authenticated user to manage EIA/RIMA forms.
+     * @path /databases/{database}/documents/eiaRimas/{eiaRimaId}
+     */
+    match /eiaRimas/{eiaRimaId} {
+        allow read, write: if isSignedIn();
+    }
+
+    /**
+     * @description Allows financial team and admins to manage invoices. Others can read.
+     * @path /databases/{database}/documents/invoices/{invoiceId}
+     */
+    match /invoices/{invoiceId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isFinancial() || isSupervisor();
+    }
+
+     /**
+     * @description Allows sales team and admins to manage proposals. Others can read.
+     * @path /databases/{database}/documents/commercialProposals/{proposalId}
+     */
+    match /commercialProposals/{proposalId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isSales() || isSupervisor() || isFinancial();
+    }
+
+    /**
+     * @description Allows sales team and admins to manage contracts. Others can read.
+     * @path /databases/{database}/documents/contracts/{contractId}
+     */
+    match /contracts/{contractId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isSales() || isSupervisor() || isFinancial();
+    }
+
+    /**
+     * @description Defines access rules for appointments. Admins/Supervisors/Financial see all.
+     * Others see non-financial events or their own. Anyone can create/write.
+     * @path /databases/{database}/documents/appointments/{appointmentId}
+     */
+    match /appointments/{appointmentId} {
+        allow get: if isSignedIn() && (
+            isAdmin() ||
+            isSupervisor() ||
+            isFinancial() ||
+            resource.data.ownerRole != 'financial' || // Public event
+            resource.data.ownerId == request.auth.uid  // Own event
+        );
+        allow list: if isSignedIn();
+        allow write: if isSignedIn();
+    }
+
+    /**
+     * @description Allows any authenticated user to manage sustainability reports.
+     * @path /databases/{database}/documents/sustainabilityReports/{reportId}
+     */
+    match /sustainabilityReports/{reportId} {
+      allow read, write: if isSignedIn();
+    }
+
+    /**
+     * @description Allows read access to signed-in users. Write access is restricted to admin or financial roles.
+     * @path /databases/{database}/documents/revenues/{revenueId}
+     */
+    match /revenues/{revenueId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isFinancial();
+    }
+
+    /**
+     * @description Allows read access to signed-in users. Write access is restricted to admin or financial roles.
+     * @path /databases/{database}/documents/expenses/{expenseId}
+     */
+    match /expenses/{expenseId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isFinancial();
+    }
+
+    /**
+     * @description Allows read access to signed-in users. Write access is restricted to admin or sales roles.
+     * @path /databases/{database}/documents/opportunities/{opportunityId}
+     */
+    match /opportunities/{opportunityId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isSales() || isSupervisor();
+    }
+
+    /**
+     * @description Allows read access to signed-in users. Write access is restricted to admin or sales roles.
+     * @path /databases/{database}/documents/contacts/{contactId}
+     */
+    match /contacts/{contactId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isSales() || isSupervisor();
+    }
+    
+    match /charcoalReports/{reportId} {
+        allow read, write: if isSignedIn();
+    }
+    
+    match /transporteResiduosReports/{reportId} {
+        allow read, write: if isSignedIn();
+    }
+    
+    match /dispensaPea/{dispensaId} {
+        allow read, write: if isSignedIn();
+    }
+  }
+}

@@ -1,0 +1,2612 @@
+
+{
+  "entities": {
+    "License": {
+      "title": "License",
+      "description": "Represents an environmental license for a project.",
+      "type": "object",
+      "properties": {
+        "empreendedorId": { "type": "string", "description": "Reference to Empreendedor." },
+        "projectId": { "type": "string", "description": "Reference to Project." },
+        "permitType": { "type": "string", "enum": ["LP", "LI", "LO", "LAS", "AAF", "Outra"] },
+        "processNumber": { "type": "string" },
+        "permitNumber": { "type": "string" },
+        "issuingBody": { "type": "string" },
+        "issueDate": { "type": "string", "format": "date-time" },
+        "expirationDate": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["Válida", "Vencida", "Em Renovação", "Suspensa", "Cancelada", "Em Andamento"] },
+        "description": { "type": "string" },
+        "fileUrl": { "type": "string" }
+      },
+      "required": ["empreendedorId", "projectId", "permitType", "processNumber", "permitNumber", "issuingBody", "issueDate", "expirationDate", "status"]
+    },
+    "Service": {
+      "title": "Service",
+      "description": "Represents a service offered by the company with its cost and price.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "The name of the service." },
+        "description": { "type": "string", "description": "A detailed description of the service." },
+        "cost": { "type": "number", "description": "The internal cost to perform the service." },
+        "price": { "type": "number", "description": "The selling price of the service." }
+      },
+      "required": ["name", "price"]
+    },
+    "Oficio": {
+      "title": "Ofício",
+      "description": "Represents an official document or communication.",
+      "type": "object",
+      "properties": {
+        "oficioNumber": { "type": "string", "description": "The automatically generated number for the document (e.g., '001/2024'). Assigned on completion." },
+        "year": { "type": "number", "description": "The year the document was finalized, used for numbering." },
+        "sequence": { "type": "number", "description": "The sequence number for the year." },
+        "subject": { "type": "string", "description": "The subject of the document." },
+        "recipient": { "type": "string", "description": "The recipient of the document." },
+        "body": { "type": "string", "description": "The full content of the document." },
+        "municipio": { "type": "string", "description": "The city where the document is being issued." },
+        "estado": { "type": "string", "description": "The state where the document is being issued." },
+        "dataEmissao": { "type": "string", "format": "date", "description": "The date the document is issued." },
+        "assinanteId": { "type": "string", "description": "The UID of the user signing the document." },
+        "assinanteNome": { "type": "string", "description": "The name of the user signing the document." },
+        "assinanteCargo": { "type": "string", "description": "The role/position of the user signing the document." },
+        "assinaturaDigitalUrl": { "type": "string", "description": "URL of the uploaded digital signature image." },
+        "status": { "type": "string", "enum": ["Rascunho", "Concluído"], "description": "The status of the document." },
+        "createdBy": { "type": "string", "description": "The UID of the user who created the document." },
+        "creatorName": { "type": "string", "description": "The name of the user who created the document." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp of creation." },
+        "completedAt": { "type": "string", "format": "date-time", "description": "Timestamp of completion." }
+      },
+      "required": ["subject", "recipient", "body", "municipio", "estado", "dataEmissao", "assinanteId", "assinanteNome", "status", "createdBy", "creatorName", "createdAt"]
+    },
+    "OficioCounter": {
+        "title": "Ofício Counter",
+        "description": "Tracks the last sequence number for ofícios in a given year.",
+        "type": "object",
+        "properties": {
+            "lastSequence": { "type": "number", "description": "The last used sequence number for the year." }
+        },
+        "required": ["lastSequence"]
+    },
+     "DispensaPEA": {
+        "title": "Dispensa de Programa de Educação Ambiental",
+        "description": "Representa uma solicitação de dispensa do Programa de Educação Ambiental.",
+        "type": "object",
+        "properties": {
+            "empreendedorId": { "type": "string" },
+            "razaoSocial": { "type": "string" },
+            "nomeFantasia": { "type": "string" },
+            "cnpj": { "type": "string" },
+            "logradouro": { "type": "string" },
+            "numero": { "type": "string" },
+            "complemento": { "type": "string" },
+            "bairro": { "type": "string" },
+            "municipio": { "type": "string" },
+            "uf": { "type": "string" },
+            "cep": { "type": "string" },
+            "telefoneComercial": { "type": "string" },
+            "telefoneCelular": { "type": "string" },
+            "email": { "type": "string", "format": "email" },
+            "coordenadas": {
+                "type": "object",
+                "properties": {
+                    "latitude": { "type": "string" },
+                    "longitude": { "type": "string" }
+                }
+            },
+            "justificativa": { "type": "string", "description": "Justificativa técnica para a dispensa." },
+            "createdAt": { "type": "string", "format": "date-time" },
+            "createdBy": { "type": "string" },
+            "solicitacaoParcial": { "type": "boolean" },
+            "dispensaParcialCampos": { "type": "array", "items": { "type": "string" } },
+            "dispensaParcialOutro": { "type": "string" },
+            "caracterizacaoSocioeconomica": { "type": "string" },
+            "responsavel": {
+                "type": "object",
+                "properties": {
+                    "id": { "type": "string" },
+                    "nome": { "type": "string" },
+                    "documento": { "type": "string" },
+                    "formacao": { "type": "string" },
+                    "cargo": { "type": "string" },
+                    "localData": { "type": "string" },
+                    "assinaturaUrl": { "type": "string" }
+                }
+            }
+        },
+        "required": ["empreendedorId", "justificativa", "createdAt", "createdBy"]
+    },
+    "AuditLog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Audit Log",
+      "type": "object",
+      "description": "Represents a single audit log entry for user actions.",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The UID of the user who performed the action."
+        },
+        "userName": {
+          "type": "string",
+          "description": "The name of the user."
+        },
+        "action": {
+          "type": "string",
+          "description": "A key representing the action performed (e.g., 'login', 'create_client')."
+        },
+        "details": {
+          "type": "object",
+          "description": "Additional context for the action, like the ID of a created document."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The server timestamp when the action was logged."
+        }
+      },
+      "required": ["userId", "userName", "action", "timestamp"]
+    },
+    "Chat": {
+        "title": "Chat",
+        "description": "Represents a chat conversation between two or more users.",
+        "type": "object",
+        "properties": {
+            "participants": { "type": "array", "items": { "type": "string" }, "description": "List of user UIDs in the chat." },
+            "lastMessage": { "type": "string", "description": "The text of the last message sent." },
+            "lastMessageTimestamp": { "type": "string", "format": "date-time" },
+            "lastMessageSenderId": { "type": "string" }
+        }
+    },
+    "ChatMessage": {
+        "title": "Chat Message",
+        "description": "Represents a single message within a chat.",
+        "type": "object",
+        "properties": {
+            "senderId": { "type": "string" },
+            "receiverId": { "type": "string" },
+            "text": { "type": "string" },
+            "timestamp": { "type": "string", "format": "date-time" },
+            "read": { "type": "boolean" },
+            "deletedFor": { "type": "array", "items": { "type": "string" }, "description": "List of user UIDs who have 'deleted' this message for themselves." }
+        },
+        "required": ["senderId", "receiverId", "text", "timestamp"]
+    },
+    "Client": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Client",
+      "type": "object",
+      "description": "Represents a commercial client for financial and CRM purposes.",
+      "properties": {
+        "name": { "type": "string", "description": "Name of the client." },
+        "email": { "type": "string", "description": "Email address.", "format": "email" },
+        "phone": { "type": "string", "description": "Phone number." },
+        "cpfCnpj": { "type": "string", "description": "CPF or CNPJ of the client." },
+        "entityType": { "type": "string", "enum": ["Pessoa Física", "Pessoa Jurídica", "Produtor Rural"] },
+        "identidade": { "type": "string", "description": "Número do RG ou outro documento de identidade." },
+        "emissor": { "type": "string", "description": "Órgão emissor do documento de identidade." },
+        "nacionalidade": { "type": "string", "description": "Nacionalidade do cliente." },
+        "estadoCivil": { "type": "string", "description": "Estado civil do cliente." },
+        "dataNascimento": { "type": "string", "format": "date-time", "description": "Data de nascimento do cliente." },
+        "ctfIbama": { "type": "string", "description": "Cadastro Técnico Federal do IBAMA." },
+        "address": { "type": "string", "description": "Main address." },
+        "numero": { "type": "string", "description": "Address number." },
+        "bairro": { "type": "string", "description": "Neighborhood/District." },
+        "municipio": { "type": "string", "description": "Municipality of the client." },
+        "uf": { "type": "string", "description": "State (UF) of the client." },
+        "cep": { "type": "string", "description": "CEP (Postal Code) of the client." }
+      },
+      "required": ["name", "email", "phone", "cpfCnpj", "entityType"]
+    },
+    "Fornecedor": {
+      "title": "Fornecedor",
+      "description": "Represents a supplier or service provider.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Name of the supplier." },
+        "cpfCnpj": { "type": "string", "description": "CPF or CNPJ of the supplier." },
+        "entityType": { "type": "string", "enum": ["Pessoa Física", "Pessoa Jurídica"], "description": "Type of entity." },
+        "email": { "type": "string", "format": "email", "description": "Email address." },
+        "phone": { "type": "string", "description": "Phone number." },
+        "serviceType": { "type": "string", "description": "Type of service provided by the supplier." },
+        "cep": { "type": "string" },
+        "logradouro": { "type": "string" },
+        "bairro": { "type": "string" },
+        "municipio": { "type": "string" },
+        "uf": { "type": "string" },
+        "referencia": { "type": "string", "description": "Location reference point." },
+        "bankDetails": {
+          "type": "object",
+          "description": "Banking information for payments.",
+          "properties": {
+            "bankName": { "type": "string" },
+            "agency": { "type": "string" },
+            "account": { "type": "string" },
+            "pixKey": { "type": "string" }
+          }
+        }
+      },
+      "required": ["name", "cpfCnpj", "entityType"]
+    },
+    "Empreendedor": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Empreendedor",
+      "type": "object",
+      "description": "Represents a technical client (empreendedor) for environmental projects.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Empreendedor entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the empreendedor."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the empreendedor.",
+          "format": "email"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Phone number of the empreendedor."
+        },
+        "address": {
+          "type": "string",
+          "description": "Address of the empreendedor."
+        },
+        "numero": {
+          "type": "string",
+          "description": "Address number."
+        },
+        "bairro": {
+          "type": "string",
+          "description": "Neighborhood of the empreendedor."
+        },
+        "projectIds": {
+          "type": "array",
+          "description": "References to Projects associated with the empreendedor.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "cpfCnpj": {
+          "type": "string",
+          "description": "CPF or CNPJ of the empreendedor."
+        },
+        "entityType": {
+          "type": "array",
+          "description": "Type of entity (Pessoa Física, Pessoa Jurídica, Produtor Rural).",
+          "items": {
+             "type": "string",
+             "enum": ["Pessoa Física", "Pessoa Jurídica", "Produtor Rural"]
+          }
+        },
+        "municipio": {
+          "type": "string",
+          "description": "Municipality of the empreendedor."
+        },
+        "uf": {
+          "type": "string",
+          "description": "State (UF) of the empreendedor."
+        },
+        "cep": {
+          "type": "string",
+          "description": "CEP (Postal Code) of the empreendedor."
+        },
+        "fax": {
+          "type": "string",
+          "description": "Fax number of the empreendedor."
+        },
+        "correspondenceLogradouro": {
+          "type": "string",
+          "description": "Street/Avenue of the correspondence address."
+        },
+        "correspondenceNumero": {
+          "type": "string",
+          "description": "Number of the correspondence address."
+        },
+        "correspondenceBairro": {
+          "type": "string",
+          "description": "Neighborhood of the correspondence address."
+        },
+        "correspondenceMunicipio": {
+          "type": "string",
+          "description": "Municipality of the correspondence address."
+        },
+        "correspondenceUf": {
+          "type": "string",
+          "description": "State (UF) of the correspondence address."
+        },
+        "correspondenceCep": {
+          "type": "string",
+          "description": "CEP (Postal Code) of the correspondence address."
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user associated with this empreendedor, if any."
+        },
+        "sourceClientId": {
+          "type": "string",
+          "description": "The ID of the original client record if this empreendedor was imported."
+        },
+        "dataNascimento": { "type": "string", "format": "date-time", "description": "Data de nascimento do cliente." },
+        "ctfIbama": { "type": "string", "description": "Cadastro Técnico Federal do IBAMA." }
+      },
+      "required": [
+        "name",
+        "email",
+        "phone",
+        "cpfCnpj",
+        "entityType",
+        "address"
+      ]
+    },
+    "FaunaStudy": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Fauna Study",
+      "type": "object",
+      "description": "Represents a technical project or report for fauna management studies (Inventory, Monitoring, Rescue).",
+      "properties": {
+        "id": { "type": "string" },
+        "studyType": { "type": "string", "enum": ["inventario_projeto", "inventario_relatorio", "monitoramento_projeto", "monitoramento_relatorio", "resgate_projeto", "resgate_relatorio", "externo"] },
+        "empreendedorId": { "type": "string" },
+        "consultoriaId": { "type": "string" },
+        "documentName": { "type": "string", "description": "The display name for an externally uploaded document." },
+        "fileUrl": { "type": "string", "description": "The URL of the uploaded document in Firebase Storage." },
+        "empreendedor": { "$ref": "#/entities/Empreendedor" },
+        "consultoria": { "$ref": "#/entities/EnvironmentalCompany" },
+        "caracterizacaoEmpreendimento": { "type": "string" },
+        "caracterizacaoAreaEstudo": {
+          "type": "object",
+          "properties": {
+            "area": { "type": "string" },
+            "clima": { "type": "string" }
+          }
+        },
+        "caracterizacaoAmbientalSecundaria": { "type": "string" },
+        "listaEspeciesSecundaria": { "type": "string" },
+        "impactosPotenciais": {
+          "type": "object",
+          "properties": {
+            "vetores": { "type": "string" },
+            "analiseInteracao": { "type": "string" }
+          }
+        },
+        "metodologiaInventariamento": { "type": "string" },
+        "equipes": { "type": "string" },
+        "referencias": { "type": "string" },
+        "numeroAutorizacao": { "type": "string" },
+        "responsaveisTecnicosRelatorio": { "type": "string" },
+        "areaDiretamenteAfetada": { "type": "string" },
+        "resultados": {
+            "type": "object",
+            "properties": {
+                "caracterizacaoAmbientalPrimaria": { "type": "string" },
+                "listaEspeciesPrimaria": { "type": "string" },
+                "impactosAmbientais": { "type": "string" }
+            }
+        },
+        "discussao": { "type": "string" },
+        "recomendacoes": { "type": "string" },
+        "objetivosMonitoramento": { "type": "string" },
+        "perguntasHipoteses": { "type": "string" },
+        "cronogramaExecucao": { "type": "string" },
+        "destinoMaterialBiologico": { "type": "string" },
+        "areasIntervencao": { "type": "string" },
+        "areasSoltura": { "type": "string" },
+        "programaResgate": {
+            "type": "object",
+            "properties": {
+                "metodologias": { "type": "string" },
+                "baseSalvamento": { "type": "string" }
+            }
+        },
+        "cursoCapacitacao": { "type": "string" },
+        "planoSupressao": { "type": "string" },
+        "acoesResgate": { "type": "string" }
+      },
+      "required": ["id", "studyType"]
+    },
+    "InventoryProject": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Inventory Project",
+      "type": "object",
+      "description": "Represents a forest inventory project.",
+      "properties": {
+        "id": { "type": "string" },
+        "nome": { "type": "string" },
+        "descricao": { "type": "string" },
+        "data": { "type": "string", "format": "date-time" },
+        "tipoProjeto": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["nome", "data", "tipoProjeto", "ownerId", "createdAt"]
+    },
+    "AnaliseSolo": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Análise de Solo",
+      "type": "object",
+      "description": "Represents a soil analysis for a specific crop.",
+      "properties": {
+        "cultura": { "type": "string" },
+        "parametros": {
+          "type": "object",
+          "properties": {
+            "RAS": { "type": "string", "description": "Adsorção de sais" },
+            "MO": { "type": "string", "description": "Matéria Orgânica" },
+            "P": { "type": "string", "description": "Fósforo" },
+            "K": { "type": "string", "description": "Potássio" },
+            "PH": { "type": "string", "description": "pH do solo" },
+            "VA": { "type": "string", "description": "Saturação por Bases" },
+            "Al": { "type": "string", "description": "Alumínio" },
+            "Ca": { "type": "string", "description": "Cálcio" },
+            "Mg": { "type": "string", "description": "Magnésio" },
+            "SB": { "type": "string", "description": "Soma de Bases" },
+            "TEXTURA": { "type": "string" }
+          }
+        }
+      }
+    },
+     "AtividadeAgricola": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Atividade Agrícola",
+      "type": "object",
+      "description": "Represents a single agricultural activity entry.",
+      "properties": {
+        "especificacao": { "type": "string", "description": "Specification of the crop." },
+        "sistema": { "type": "string", "enum": ["Convencional", "Orgânico"], "description": "Cultivation system." },
+        "area": { "type": "number", "description": "Area in hectares." },
+        "certificado": { "type": "string", "description": "Certification number, if any." }
+      },
+      "required": ["especificacao", "sistema", "area"]
+    },
+    "AtividadeAgropecuaria": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Atividade Agropecuária",
+      "type": "object",
+      "description": "Represents a single livestock activity entry.",
+      "properties": {
+        "especificacao": { "type": "string", "description": "Specification of the animal." },
+        "cabecas": { "type": "number", "description": "Number of heads." }
+      },
+      "required": ["especificacao", "cabecas"]
+    },
+    "OutraAtividade": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Outra Atividade",
+      "type": "object",
+      "description": "Represents another undescribed activity.",
+      "properties": {
+        "especificacao": { "type": "string", "description": "Activity specification." },
+        "codigo": { "type": "string", "description": "DN-74/2004 Code." },
+        "unidade": { "type": "string", "description": "Unit." },
+        "quantidade": { "type": "number", "description": "Quantity." },
+        "inicio": { "type": "string", "description": "Start date of the activity." }
+      },
+      "required": ["especificacao"]
+    },
+    "Project": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Project",
+      "type": "object",
+      "description": "Represents an environmental project, license, or study, aligned with Minas Gerais legislation.",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the Project entity." },
+        "empreendedorId": { "type": "string", "description": "Reference to Empreendedor. (Relationship: Empreendedor 1:N Project)" },
+        "userId": { "type": "string", "description": "Reference to the User responsible for this project." },
+        "assignedTeam": {
+          "type": "array",
+          "description": "List of user IDs assigned to this project.",
+          "items": { "type": "string" }
+        },
+        "activity": { "type": "string", "description": "Activity code and description from DN 217." },
+        "propertyName": { "type": "string", "description": "Name of the property for the project/empreendimento." },
+        "fantasyName": { "type": "string", "description": "Fantasy name of the project/empreendimento." },
+        "incraCode": { "type": "string", "description": "INCRA registration code." },
+        "cnpj": { "type": "string", "description": "CNPJ of the company." },
+        "zoneType": { "type": "string", "description": "The zone type of the project location.", "enum": ["Rural", "Residencial", "Comercial", "Não"] },
+        "caixaPostal": { "type": "string", "description": "Post office box number." },
+        "inscricaoEstadual": { "type": "string", "description": "State registration number." },
+        "inscricaoMunicipal": { "type": "string", "description": "Municipal registration number." },
+        "correspondenceIsSame": { "type": "boolean", "description": "Flag indicating if correspondence address is same as main address." },
+        "correspondenceAddress": { "type": "string", "description": "Correspondence address." },
+        "correspondenceCaixaPostal": { "type": "string", "description": "Correspondence post office box." },
+        "correspondenceMunicipio": { "type": "string", "description": "Correspondence municipality." },
+        "correspondenceUf": { "type": "string", "description": "Correspondence state (UF)." },
+        "correspondenceCep": { "type": "string", "description": "Correspondence CEP." },
+        "matricula": { "type": "string", "description": "Matrícula number of the property." },
+        "comarca": { "type": "string", "description": "Comarca of the property." },
+        "address": { "type": "string", "description": "Address of the empreendimento." },
+        "numero": { "type": "string" },
+        "cep": { "type": "string" },
+        "municipio": { "type": "string", "description": "Municipality of the empreendimento." },
+        "district": { "type": "string", "description": "District or Locality of the empreendimento." },
+        "uf": { "type": "string", "description": "State (UF) of the empreendimento." },
+        "ownerCondition": {
+          "type": "array",
+          "description": "Condition of the empreendedor (e.g., Proprietário, Arrendatário).",
+          "items": {
+            "type": "string",
+            "enum": ["Proprietário", "Arrendatário", "Parceiro", "Posseiro", "Outros"]
+          }
+        },
+        "geographicLocation": {
+          "type": "object",
+          "description": "Geographic location of the property.",
+          "properties": {
+            "datum": { "type": "string", "enum": ["SAD-69", "WGS-84", "Córrego Alegre"] },
+            "format": { "type": "string", "enum": ["Lat/Long", "UTM"] },
+            "latLong": {
+              "type": "object",
+              "properties": {
+                "lat": { "type": "object", "properties": { "grau": { "type": "string" }, "min": { "type": "string" }, "seg": { "type": "string" } } },
+                "long": { "type": "object", "properties": { "grau": { "type": "string" }, "min": { "type": "string" }, "seg": { "type": "string" } } }
+              }
+            },
+            "utm": {
+              "type": "object",
+              "properties": {
+                "x": { "type": "string" },
+                "y": { "type": "string" },
+                "fuso": { "type": "string", "enum": ["22", "23", "24"] }
+              }
+            },
+            "local": { "type": "string" },
+            "additionalLocationInfo": { "type": "string" },
+            "hydrographicBasin": { "type": "string" },
+            "hydrographicSubBasin": { "type": "string" },
+            "upgrh": { "type": "string" },
+            "nearestWaterCourse": { "type": "string" }
+          }
+        },
+        "locationalRestrictions": {
+          "type": "object",
+          "description": "Locational restrictions of the project.",
+          "properties": {
+            "biome": { "type": "string", "enum": ["Cerrado", "Mata Atlântica", "Outro", "Não"] },
+            "biomeOther": { "type": "string" },
+            "hasNativeVegetation": { "type": "boolean" },
+            "nativeVegetation": { "type": "array", "items": { "type": "string" } },
+            "nativeVegetationOther": { "type": "string" },
+            "inPermanentPreservationArea": { "type": "boolean" },
+            "propertyHasPermanentPreservationArea": { "type": "boolean" },
+            "isPermanentPreservationAreaPreserved": { "type": "boolean" },
+            "isPermanentPreservationAreaProtected": { "type": "boolean" },
+            "inKarstArea": { "type": "boolean" },
+            "inFluvialLacustrineArea": { "type": "boolean" }
+          }
+        },
+        "conservationUnit": {
+          "type": "object",
+          "description": "Information about conservation units.",
+          "properties": {
+            "isInConservationUnit": { "type": "string", "enum": ["Sim", "Não"], "description": "Is the project within a conservation unit or its buffer zone?" },
+            "distance": { "type": "string", "description": "Distance to the conservation unit." },
+            "ucName": { "type": "string", "description": "Name of the conservation unit." },
+            "managementCategory": { "type": "string", "enum": ["Uso Sustentável", "Proteção Integral"], "description": "Management category of the conservation unit." },
+            "jurisdiction": { "type": "string", "enum": ["Federal", "Estadual", "Municipal", "Privada"], "description": "Jurisdiction of the conservation unit." },
+            "managingBody": { "type": "string", "description": "Managing body of the conservation unit." }
+          }
+        },
+        "legalReserve": {
+          "type": "object",
+          "description": "Information about the legal reserve.",
+          "properties": {
+            "status": { "type": "string", "enum": ["not_rural", "demarcation_in_progress", "commitment_signed", "demarcation_done", "registered"] },
+            "commitmentProcessNumber": { "type": "string" },
+            "demarcationProcessNumber": { "type": "string" }
+          }
+        },
+        "criteriosDN130": {
+          "type": "object",
+          "description": "Additional criteria for class framing according to DN 130/2008.",
+          "properties": {
+            "possuiRPPN": { "type": "boolean" },
+            "areaAntropizadaConsolidada": { "type": "boolean" },
+            "reservaLegalProtegidaFogo": { "type": "boolean" },
+            "reservaLegalProtegidaPisoteio": { "type": "boolean" },
+            "appProtegidaFogo": { "type": "boolean" },
+            "appProtegidaPisoteio": { "type": "boolean" },
+            "compromissoFormal": { "type": "boolean" },
+            "compromissos": { "type": "array", "items": { "type": "string" } },
+            "adotaSistemasReducaoVulnerabilidade": { "type": "boolean" },
+            "sistemasReducaoDescricao": { "type": "string" },
+            "usaQueimaCana": { "type": "boolean" },
+            "praticasDesenvolvidas": { "type": "array", "items": { "type": "string" } },
+            "outrosSistemasAgroecologicos": { "type": "string" }
+          }
+        },
+        "barragemAlternativas": {
+          "type": "array",
+          "description": "Information about locational alternatives for the dam.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "identificacaoArea": { "type": "string" },
+              "distanciaGeracaoRejeito": { "type": "number" },
+              "jusanteContribuicaoPluvial": { "type": "boolean" },
+              "topografia": {
+                "type": "object",
+                "properties": {
+                  "alturaTalude": { "type": "string", "enum": ["Menor que 30 metros", "Entre 30 e 60 metros", "Maior que 60 metros"] },
+                  "areaInundacao": { "type": "number" },
+                  "volumeTerraMovimentada": { "type": "number" },
+                  "distanciaAreaEmprestimo": { "type": "number" }
+                }
+              },
+              "hidrologia": {
+                "type": "object",
+                "properties": {
+                  "areaContribuicao": { "type": "string", "enum": ["Menor que 5 vezes área do lago", "Entre 5 e 10 vezes a área do lago", "Maior que 10 vezes a área do lago"] },
+                  "aporteAguasSuperficiais": { "type": "number" },
+                  "aporteAguaPluvial": { "type": "number" }
+                }
+              },
+              "geologia": {
+                "type": "object",
+                "properties": {
+                  "descricaoGeologiaLocal": { "type": "string" },
+                  "permeabilidade": { "type": "number" },
+                  "disponibilidadeMaterialNatural": { "type": "string" },
+                  "condicoesFundacao": { "type": "string" }
+                }
+              },
+              "aguaSubterranea": {
+                "type": "object",
+                "properties": {
+                  "profundidadeLencolFreatico": { "type": "number" }
+                }
+              }
+            }
+          }
+        },
+        "damTechnicalSheet": {
+          "type": "object",
+          "description": "Ficha Técnica da Barragem",
+          "properties": {
+            "barragemNova": { "$ref": "#/definitions/DamSheetData" },
+            "barragemExistente": { "$ref": "#/definitions/DamSheetData" },
+            "alteamento": { "$ref": "#/definitions/DamSheetData" }
+          }
+        },
+        "projectArea": {
+          "type": "object",
+          "description": "Details of the project's area.",
+          "properties": {
+            "totalArea": { "type": "number", "description": "Área total do terreno (ha)." },
+            "builtArea": { "type": "number", "description": "Área construída (ha)." }
+          }
+        },
+        "jobCreation": {
+          "type": "object",
+          "description": "Information about job creation.",
+          "properties": {
+            "fixos": { "type": "number" },
+            "temporarios": { "type": "number" },
+            "terceirizados": { "type": "number" },
+            "residentFamilies": { "type": "number" }
+          }
+        },
+        "equipments": {
+            "type": "array",
+            "description": "List of equipment and vehicles on the property.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": { "type": "string" },
+                    "quantity": { "type": "number" }
+                }
+            }
+        },
+        "agriculturalInputs": {
+            "type": "object",
+            "description": "List of agricultural inputs used.",
+            "properties": {
+                "gesso": { "$ref": "#/definitions/InputDetail" },
+                "calcario": { "$ref": "#/definitions/InputDetail" },
+                "silica": { "$ref": "#/definitions/InputDetail" },
+                "fertilizantes": {
+                    "type": "object",
+                    "properties": {
+                        "fosfatagem": { "$ref": "#/definitions/InputDetail" },
+                        "outros": { "$ref": "#/definitions/InputDetail" }
+                    }
+                },
+                "defensivos": {
+                    "type": "object",
+                    "properties": {
+                        "herbicida": { "$ref": "#/definitions/InputDetail" },
+                        "inseticida": { "$ref": "#/definitions/InputDetail" },
+                        "fungicida": { "$ref": "#/definitions/InputDetail" },
+                        "outros": { "$ref": "#/definitions/InputDetail" }
+                    }
+                },
+                "acaricida": { "$ref": "#/definitions/InputDetail" },
+                "vermifugo": { "$ref": "#/definitions/InputDetail" },
+                "antibioticos": { "$ref": "#/definitions/InputDetail" },
+                "hormonios": { "$ref": "#/definitions/InputDetail" },
+                "vacinas": { "$ref": "#/definitions/InputDetail" },
+                "outros": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": { "type": "string" },
+                            "storageLocation": { "type": "string" }
+                        }
+                    }
+                }
+            }
+        },
+        "physicalStructures": {
+            "type": "array",
+            "description": "List of existing physical structures/improvements on the property.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": { "type": "string" },
+                    "quantity": { "type": "number" },
+                    "area": { "type": "number" },
+                    "description": { "type": "string" }
+                }
+            }
+        },
+        "analiseSolo": {
+          "type": "array",
+          "description": "Soil analysis data for different crops.",
+          "items": { "$ref": "#/entities/AnaliseSolo" }
+        },
+         "atividadesAgricolas": {
+          "type": "object",
+          "description": "Agricultural activities broken down by type.",
+          "properties": {
+            "olericultura": { "type": "array", "items": { "$ref": "#/entities/AtividadeAgricola" } },
+            "culturasAnuais": { "type": "array", "items": { "$ref": "#/entities/AtividadeAgricola" } },
+            "culturasPerenes": { "type": "array", "items": { "$ref": "#/entities/AtividadeAgricola" } }
+          }
+        },
+         "irrigacao": {
+          "type": "array",
+          "description": "Irrigation details for different crops.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "cultura": { "type": "string" },
+              "tipo": { "type": "string" },
+              "vazao": { "type": "string" },
+              "pontoCaptacao": { "type": "string" },
+              "classificacaoAgua": { "type": "string" },
+              "volumeOutorgado": { "type": "string" },
+              "velocidadeInfiltracao": { "type": "string" },
+              "laminaDagua": { "type": "string" },
+              "turnoRega": { "type": "string" }
+            }
+          }
+        },
+        "atividadesFlorestais": {
+            "type": "object",
+            "description": "Forestry activities.",
+            "properties": {
+                "silvicultura": { "type": "array", "items": { "type": "object", "properties": { "especie": { "type": "string" }, "area": { "type": "number" } } } },
+                "carvoejamento": { "type": "array", "items": { "type": "object", "properties": { "tipo": { "type": "string", "enum": ["Nativo", "Plantada"] }, "especie": { "type": "string" }, "volume": { "type": "number" } } } }
+            }
+        },
+        "atividadesAgropecuarias": {
+          "type": "array",
+          "description": "Livestock activities.",
+          "items": { "$ref": "#/entities/AtividadeAgropecuaria" }
+        },
+        "outrasAtividades": {
+          "type": "array",
+          "description": "Other undescribed activities.",
+          "items": { "$ref": "#/entities/OutraAtividade" }
+        },
+        "processNumber": {
+          "type": "string",
+          "description": "The administrative process number (e.g., 12345/2022)."
+        },
+        "issuingBody": {
+          "type": "string",
+          "description": "The environmental body that issued the permit (e.g., SEMAD, SUPRAM)."
+        },
+        "issueDate": {
+          "type": "string",
+          "description": "Date the permit was issued.",
+          "format": "date-time"
+        },
+        "expirationDate": {
+          "type": "string",
+          "description": "Date the permit expires. Renewal must be requested 120 days prior.",
+          "format": "date-time"
+        },
+        "status": {
+            "type": "string",
+            "description": "Current status of the environmental permit.",
+            "enum": ["Válida", "Vencida", "Em Renovação", "Suspensa", "Cancelada"]
+        },
+        "description": {
+          "type": "string",
+          "description": "Description and scope of the environmental permit."
+        },
+        "fileUrl": {
+          "type": "string",
+          "description": "URL of the uploaded document file (e.g., PDF, JPG) in Firebase Storage."
+        }
+      },
+      "required": [
+        "id",
+        "empreendedorId",
+        "propertyName"
+      ]
+    },
+    "Request": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Request",
+        "type": "object",
+        "description": "Represents an initial request for a new environmental process.",
+        "properties": {
+            "id": { "type": "string" },
+            "empreendedorId": { "type": "string" },
+            "projectId": { "type": "string" },
+            "services": {
+                "type": "array",
+                "items": { "type": "string" }
+            },
+            "status": {
+                "type": "string",
+                "enum": ["Draft", "Submitted", "In Progress", "Completed"]
+            },
+            "createdAt": {
+                "type": "string",
+                "format": "date-time"
+            },
+            "solicitationNumber": {
+                "type": "string"
+            }
+        },
+        "required": ["empreendedorId", "projectId", "services", "status", "createdAt"]
+    },
+    "CompanySettings": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Company Settings",
+      "type": "object",
+      "description": "Stores general company settings, including branding and document templates.",
+      "properties": {
+        "headerImageUrl": { "type": "string", "description": "URL for the report header image." },
+        "footerImageUrl": { "type": "string", "description": "URL for the report footer image." },
+        "watermarkImageUrl": { "type": "string", "description": "URL for the report watermark image." },
+        "templatesRcaListagemA": { "$ref": "#/definitions/TemplateList" },
+        "templatesRcaListagemB": { "$ref": "#/definitions/TemplateList" },
+        "templatesRcaListagemC": { "$ref": "#/definitions/TemplateList" },
+        "templatesRcaListagemD": { "$ref": "#/definitions/TemplateList" },
+        "templatesRcaListagemE": { "$ref": "#/definitions/TemplateList" },
+        "templatesRcaListagemF": { "$ref": "#/definitions/TemplateList" },
+        "templatesRcaListagemG": { "$ref": "#/definitions/TemplateList" },
+        "templatesPcaListagemA": { "$ref": "#/definitions/TemplateList" },
+        "templatesPcaListagemB": { "$ref": "#/definitions/TemplateList" },
+        "templatesPcaListagemC": { "$ref": "#/definitions/TemplateList" },
+        "templatesPcaListagemD": { "$ref": "#/definitions/TemplateList" },
+        "templatesPcaListagemE": { "$ref": "#/definitions/TemplateList" },
+        "templatesPcaListagemF": { "$ref": "#/definitions/TemplateList" },
+        "templatesPcaListagemG": { "$ref": "#/definitions/TemplateList" },
+        "templatesFauna": { "$ref": "#/definitions/TemplateList" },
+        "templatesInventarioFlorestal": { "$ref": "#/definitions/TemplateList" },
+        "templatesRequerimentoIntervencao": { "$ref": "#/definitions/TemplateList" },
+        "templatesPrada": { "$ref": "#/definitions/TemplateList" },
+        "templatesPtrf": { "$ref": "#/definitions/TemplateList" },
+        "templatesEiaListagemA": { "$ref": "#/definitions/TemplateList" },
+        "templatesEiaListagemB": { "$ref": "#/definitions/TemplateList" },
+        "templatesEiaListagemC": { "$ref": "#/definitions/TemplateList" },
+        "templatesEiaListagemD": { "$ref": "#/definitions/TemplateList" },
+        "templatesEiaListagemE": { "$ref": "#/definitions/TemplateList" },
+        "templatesEiaListagemF": { "$ref": "#/definitions/TemplateList" },
+        "templatesEiaListagemG": { "$ref": "#/definitions/TemplateList" },
+        "templatesRima": { "$ref": "#/definitions/TemplateList" },
+        "templatesLasRasListagemA": { "$ref": "#/definitions/TemplateList" },
+        "templatesLasRasListagemB": { "$ref": "#/definitions/TemplateList" },
+        "templatesLasRasListagemC": { "$ref": "#/definitions/TemplateList" },
+        "templatesLasRasListagemD": { "$ref": "#/definitions/TemplateList" },
+        "templatesLasRasListagemE": { "$ref": "#/definitions/TemplateList" },
+        "templatesLasRasListagemF": { "$ref": "#/definitions/TemplateList" },
+        "templatesLasRasListagemG": { "$ref": "#/definitions/TemplateList" },
+        "templatesOutorgas": { "$ref": "#/definitions/TemplateList" },
+        "templatesSegurancaBarragem": { "$ref": "#/definitions/TemplateList" },
+        "templatesEstudosCavidades": { "$ref": "#/definitions/TemplateList" },
+        "templatesReservaLegal": { "$ref": "#/definitions/TemplateList" },
+        "templatesEducacaoAmbiental": { "$ref": "#/definitions/TemplateList" },
+        "templatesProjetoTecnicoBarragem": { "$ref": "#/definitions/TemplateList" }
+      }
+    },
+    "EnvironmentalCompany": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "EnvironmentalCompany",
+        "type": "object",
+        "description": "Represents an environmental company.",
+        "properties": {
+            "id": { "type": "string" },
+            "name": { "type": "string", "description": "Razão Social" },
+            "fantasyName": { "type": "string", "description": "Nome Fantasia" },
+            "cnpj": { "type": "string" },
+            "address": { "type": "string" },
+            "numero": { "type": "string" },
+            "caixaPostal": { "type": "string" },
+            "municipio": { "type": "string" },
+            "district": { "type": "string" },
+            "uf": { "type": "string" },
+            "cep": { "type": "string" },
+            "ddd": { "type": "string" },
+            "phone": { "type": "string" },
+            "fax": { "type": "string" },
+            "email": { "type": "string", "format": "email" }
+        },
+        "required": ["id", "name", "cnpj"]
+    },
+    "TechnicalResponsible": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "TechnicalResponsible",
+        "type": "object",
+        "description": "Represents a technical responsible person.",
+        "properties": {
+            "id": { "type": "string" },
+            "name": { "type": "string" },
+            "cpf": { "type": "string" },
+            "identidade": { "type": "string" },
+            "emissor": { "type": "string" },
+            "nacionalidade": { "type": "string" },
+            "estadoCivil": { "type": "string" },
+            "profession": { "type": "string" },
+            "registrationNumber": { "type": "string" },
+            "art": { "type": "string" },
+            "address": { "type": "string" },
+            "numero": { "type": "string" },
+            "bairro": { "type": "string" },
+            "municipio": { "type": "string" },
+            "uf": { "type": "string" },
+            "cep": { "type": "string" }
+        },
+        "required": ["id", "name", "cpf", "profession", "registrationNumber"]
+    },
+     "WaterPermit": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "WaterPermit",
+      "type": "object",
+      "description": "Represents a water usage permit (Outorga de Uso de Água).",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the WaterPermit entity." },
+        "empreendedorId": { "type": "string", "description": "Reference to the associated Empreendedor." },
+        "permitNumber": { "type": "string", "description": "The official permit number (Portaria de Outorga)." },
+        "processNumber": { "type": "string", "description": "The administrative process number." },
+        "issueDate": { "type": "string", "format": "date-time", "description": "Date the permit was issued." },
+        "expirationDate": { "type": "string", "format": "date-time", "description": "Date the permit expires." },
+        "status": { "type": "string", "description": "Current status of the permit.", "enum": ["Válida", "Vencida", "Em Renovação", "Suspensa", "Cancelada"] },
+        "description": { "type": "string", "description": "Purpose of the water permit (e.g., groundwater abstraction, surface water diversion)." },
+        "fileUrl": { "type": "string", "description": "URL of the uploaded permit document." },
+        "pontosDeMonitoramento": {
+          "type": "array",
+          "description": "List of monitoring points associated with this water permit.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "nome": { "type": "string" }
+            },
+            "required": ["id", "nome"]
+          }
+        }
+      },
+      "required": ["id", "empreendedorId", "permitNumber", "processNumber", "issueDate", "expirationDate", "status", "pontosDeMonitoramento"]
+    },
+    "ManualMonitoringLog": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Manual Monitoring Log",
+        "type": "object",
+        "description": "Represents a single manual monitoring entry for a water permit point.",
+        "properties": {
+            "id": { "type": "string" },
+            "outorgaId": { "type": "string", "description": "Reference to the WaterPermit." },
+            "pontoId": { "type": "string", "description": "Identifier of the monitoring point within the permit." },
+            "logDate": { "type": "string", "format": "date-time", "description": "The date of the reading." },
+            "startTime": { "type": "string", "format": "time", "description": "Time the pump was turned on." },
+            "endTime": { "type": "string", "format": "time", "description": "Time the pump was turned off." },
+            "flowRateLps": { "type": "number", "description": "Instantaneous flow rate in Liters per second." },
+            "flowRateM3h": { "type": "number", "description": "Instantaneous flow rate in Cubic meters per hour." },
+            "horimeterStart": { "type": "number", "description": "Horimeter reading at the start." },
+            "horimeterEnd": { "type": "number", "description": "Horimeter reading at the end." },
+            "userId": { "type": "string", "description": "UID of the user who made the log." },
+            "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp of when the log was created." }
+        },
+        "required": ["outorgaId", "pontoId", "logDate", "startTime", "endTime", "flowRateLps", "flowRateM3h", "horimeterStart", "horimeterEnd", "userId", "createdAt"]
+    },
+    "EnvironmentalIntervention": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "EnvironmentalIntervention",
+      "type": "object",
+      "description": "Represents an authorization for environmental intervention (e.g., vegetation removal).",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the entity." },
+        "empreendedorId": { "type": "string", "description": "Reference to the associated Empreendedor." },
+        "processNumber": { "type": "string", "description": "The administrative process number." },
+        "issuingBody": { "type": "string", "description": "The environmental body that issued the authorization (e.g., IEF, SEMAD)." },
+        "issueDate": { "type": "string", "format": "date-time", "description": "Date the authorization was issued." },
+        "expirationDate": { "type": "string", "format": "date-time", "description": "Date the authorization expires." },
+        "status": { "type": "string", "description": "Current status of the authorization.", "enum": ["Válida", "Vencida", "Em Renovação", "Suspensa", "Cancelada"] },
+        "description": { "type": "string", "description": "Type or description of the intervention (e.g., native vegetation suppression)." },
+        "fileUrl": { "type": "string", "description": "URL of the uploaded authorization document." }
+      },
+      "required": ["id", "empreendedorId", "processNumber", "issuingBody", "issueDate", "expirationDate", "status"]
+    },
+    "Condicionante": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Condicionante",
+        "type": "object",
+        "description": "Represents a single environmental condition or requirement for a license or permit.",
+        "properties": {
+            "id": { "type": "string", "description": "Unique identifier for the Condicionante." },
+            "referenceId": { "type": "string", "description": "ID of the associated Project (license) or WaterPermit (outorga)." },
+            "referenceType": { "type": "string", "enum": ["licenca", "outorga", "intervencao"], "description": "The type of document the condition is linked to." },
+            "description": { "type": "string", "description": "The full description of the environmental condition." },
+            "dueDate": { "type": "string", "format": "date-time", "description": "The deadline for complying with the condition." },
+            "status": { "type": "string", "enum": ["Pendente", "Cumprida", "Atrasada", "Não Aplicável"], "description": "The current compliance status of the condition." },
+            "recurrence": { "type": "string", "enum": ["Única", "Mensal", "Trimestral", "Semestral", "Anual"], "description": "How often the condition needs to be met." },
+            "fileUrl": { "type": "string", "description": "URL of the uploaded proof of compliance document." }
+        },
+        "required": ["referenceId", "referenceType", "description", "dueDate", "status", "recurrence"]
+    },
+    "Invoice": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Invoice",
+      "type": "object",
+      "description": "Represents an invoice.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Invoice entity."
+        },
+        "clientId": {
+          "type": "string",
+          "description": "Reference to Client. (Relationship: Client 1:N Invoice)"
+        },
+        "invoiceNumber": {
+          "type": "string",
+          "description": "Invoice number."
+        },
+        "invoiceDate": {
+          "type": "string",
+          "description": "Date the invoice was issued.",
+          "format": "date-time"
+        },
+        "dueDate": {
+          "type": "string",
+          "description": "Date the invoice is due.",
+          "format": "date-time"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Total amount of the invoice."
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the invoice (e.g., Paid, Unpaid, Overdue)."
+        },
+         "fileUrl": {
+            "type": "string",
+            "description": "URL of the uploaded invoice/boleto file in Firebase Storage."
+        },
+        "contractId": {
+          "type": "string",
+          "description": "Optional reference to a Contract."
+        }
+      },
+      "required": [
+        "id",
+        "clientId",
+        "invoiceNumber",
+        "invoiceDate",
+        "dueDate",
+        "amount",
+        "status"
+      ]
+    },
+    "CommercialProposal": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Commercial Proposal",
+      "type": "object",
+      "description": "Represents a commercial proposal or quote.",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the CommercialProposal entity." },
+        "clientId": { "type": "string", "description": "Reference to Client." },
+        "empreendimento": { "type": "string", "description": "Name of the project/enterprise this proposal is for." },
+        "proposalNumber": { "type": "string", "description": "Proposal number." },
+        "proposalDate": { "type": "string", "format": "date-time", "description": "Date the proposal was issued." },
+        "validUntilDate": { "type": "string", "format": "date-time", "description": "Date the proposal is valid until." },
+        "items": {
+            "type": "array",
+            "description": "List of services or products offered in the proposal.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "description": { "type": "string", "description": "Description of the service item." },
+                    "value": { "type": "number", "description": "Value of the service item." }
+                },
+                "required": ["description", "value"]
+            }
+        },
+        "amount": { "type": "number", "description": "Total amount of the proposal, calculated from items." },
+        "status": { "type": "string", "enum": ["Draft", "Sent", "Accepted", "Rejected"], "description": "Status of the proposal." },
+        "fileUrl": { "type": "string", "description": "URL of the uploaded proposal file in Firebase Storage." }
+      },
+      "required": [ "clientId", "proposalNumber", "proposalDate", "validUntilDate", "items", "amount", "status"]
+    },
+    "Contract": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Contract",
+        "type": "object",
+        "description": "Represents a service contract.",
+        "properties": {
+            "id": { "type": "string" },
+            "status": { "type": "string", "enum": ["Rascunho", "Aprovado"], "description": "The status of the contract." },
+            "contratante": {
+                "$ref": "#/entities/Client"
+            },
+            "contratado": {
+                "$ref": "#/entities/EnvironmentalCompany"
+            },
+            "responsavelTecnico": {
+                "$ref": "#/entities/TechnicalResponsible"
+            },
+            "objeto": {
+                "type": "object",
+                "properties": {
+                    "empreendimento": { "type": "string" },
+                    "municipio": { "type": "string" },
+                    "uf": { "type": "string" },
+                    "servicos": { "type": "string" },
+                    "itens": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "descricao": { "type": "string" },
+                                "valor": { "type": "number" }
+                            }
+                        }
+                    }
+                }
+            },
+            "pagamento": {
+                "type": "object",
+                "properties": {
+                    "valorTotal": { "type": "number" },
+                    "valorExtenso": { "type": "string" },
+                    "forma": { "type": "string" },
+                    "banco": { "type": "string" },
+                    "agencia": { "type": "string" },
+                    "conta": { "type": "string" },
+                    "pix": { "type": "string" }
+                }
+            },
+            "foro": {
+                "type": "object",
+                "properties": {
+                    "comarca": { "type": "string" },
+                    "uf": { "type": "string" }
+                }
+            },
+            "dataContrato": { "type": "string", "format": "date-time" },
+            "fileUrl": { "type": "string", "description": "URL to the uploaded signed contract PDF." }
+        },
+        "required": ["contratante", "contratado", "responsavelTecnico", "objeto", "pagamento", "foro", "dataContrato", "status"]
+    },
+    "Appointment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Appointment",
+      "type": "object",
+      "description": "Represents an appointment in the calendar.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Appointment entity."
+        },
+        "clientId": {
+          "type": "string",
+          "description": "Reference to Client. (Relationship: Client 1:N Appointment)"
+        },
+        "startTime": {
+          "type": "string",
+          "description": "Start time of the appointment.",
+          "format": "date-time"
+        },
+        "endTime": {
+          "type": "string",
+          "description": "End time of the appointment.",
+          "format": "date-time"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the appointment."
+        },
+        "location": {
+          "type": "string",
+          "description": "Location of the appointment."
+        }
+      },
+      "required": [
+        "id",
+        "clientId",
+        "startTime",
+        "endTime",
+        "description"
+      ]
+    },
+    "Revenue": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Revenue",
+      "type": "object",
+      "description": "Represents a revenue record.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Revenue entity."
+        },
+        "clientId": {
+          "type": "string",
+          "description": "Optional reference to the client who made the payment."
+        },
+        "date": {
+          "type": "string",
+          "description": "Date of the revenue.",
+          "format": "date-time"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Amount of the revenue."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the revenue."
+        },
+         "fileUrl": {
+            "type": "string",
+            "description": "URL of the uploaded receipt file in Firebase Storage."
+        }
+      },
+      "required": [
+        "id",
+        "date",
+        "amount",
+        "description"
+      ]
+    },
+    "Expense": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Expense",
+      "type": "object",
+      "description": "Represents an expense record.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Expense entity."
+        },
+        "date": {
+          "type": "string",
+          "description": "Date of the expense.",
+          "format": "date-time"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Amount of the expense."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the expense."
+        },
+         "fileUrl": {
+            "type": "string",
+            "description": "URL of the uploaded receipt file in Firebase Storage."
+        }
+      },
+      "required": [
+        "id",
+        "date",
+        "amount",
+        "description"
+      ]
+    },
+    "SustainabilityReport": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SustainabilityReport",
+      "type": "object",
+      "description": "Represents a sustainability report.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the SustainabilityReport entity."
+        },
+        "clientId": {
+          "type": "string",
+          "description": "Reference to Client. (Relationship: Client 1:N SustainabilityReport)"
+        },
+        "reportDate": {
+          "type": "string",
+          "description": "Date the report was generated.",
+          "format": "date-time"
+        },
+        "content": {
+          "type": "string",
+          "description": "Content of the sustainability report."
+        },
+        "environmentalMetrics": {
+          "type": "string",
+          "description": "Metrics on environmental impact."
+        }
+      },
+      "required": [
+        "id",
+        "clientId",
+        "reportDate",
+        "content",
+        "environmentalMetrics"
+      ]
+    },
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents an application user.",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Unique identifier from Firebase Auth."
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name of the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user.",
+          "format": "email"
+        },
+        "photoURL": {
+            "type": "string",
+            "description": "URL of the user's profile picture."
+        },
+        "role": {
+          "type": "string",
+          "description": "The role of the user, determining their permissions.",
+          "enum": ["admin", "client", "technical", "sales", "financial", "gestor", "supervisor", "diretor_fauna"]
+        },
+        "status": {
+          "type": "string",
+          "description": "The status of the user account.",
+          "enum": ["active", "inactive"]
+        },
+        "cpf": {
+            "type": "string",
+            "description": "CPF to link a user to a client."
+        },
+        "cnpjs": {
+            "type": "array",
+            "description": "CNPJs to link a user to one or more clients.",
+            "items": {
+                "type": "string"
+            }
+        },
+        "dataNascimento": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data de nascimento do usuário."
+        },
+        "isOnline": {
+            "type": "boolean",
+            "description": "Indicates if the user is currently online."
+        },
+        "lastLogin": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp of the user's last login."
+        }
+      },
+      "required": [
+        "uid",
+        "name",
+        "email",
+        "role",
+        "status",
+        "isOnline"
+      ]
+    },
+    "Opportunity": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Opportunity",
+      "type": "object",
+      "description": "Represents a sales opportunity or deal in the CRM pipeline.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Opportunity entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name or title of the opportunity."
+        },
+        "clientId": {
+          "type": "string",
+          "description": "Reference to the associated client."
+        },
+        "value": {
+          "type": "number",
+          "description": "Estimated monetary value of the opportunity."
+        },
+        "closeDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Expected closing date for the deal."
+        },
+        "stage": {
+          "type": "string",
+          "description": "Current stage in the sales pipeline.",
+          "enum": [
+            "Qualificação",
+            "Proposta",
+            "Negociação",
+            "Fechado Ganho",
+            "Fechado Perdido"
+          ]
+        },
+        "assignedTo": {
+          "type": "string",
+          "description": "User ID of the sales representative assigned to this opportunity."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "clientId",
+        "value",
+        "closeDate",
+        "stage"
+      ]
+    },
+    "Contact": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Contact",
+      "type": "object",
+      "description": "Represents a contact or lead in the CRM.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Contact entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the contact."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email address of the contact."
+        },
+        "phone": {
+          "type": "string",
+          "description": "Phone number of the contact."
+        },
+        "company": {
+          "type": "string",
+          "description": "Company the contact works for."
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the lead (e.g., New, Contacted, Qualified).",
+          "enum": ["New", "Contacted", "Qualified", "Unqualified"]
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "email"
+      ]
+    },
+    "Prada": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Prada",
+      "type": "object",
+      "description": "Represents a PRADA form.",
+      "properties": {
+        "id": { "type": "string" },
+        "status": { "type": "string", "enum": ["Rascunho", "Aprovado"], "description": "The status of the PRADA." },
+        "requerente": {
+          "type": "object",
+          "properties": {
+            "clientId": { "type": "string" },
+            "nome": { "type": "string" },
+            "cpfCnpj": { "type": "string" }
+          }
+        },
+        "empreendimento": {
+          "type": "object",
+          "properties": {
+            "projectId": { "type": "string" },
+            "nome": { "type": "string" },
+            "denominacao": { "type": "string" },
+            "car": { "type": "string" },
+            "matricula": { "type": "string" }
+          }
+        },
+        "responsavelTecnico": {
+          "type": "object",
+          "properties": {
+            "nome": { "type": "string" },
+            "cpf": { "type": "string" },
+            "email": { "type": "string", "format": "email" },
+            "telefone": { "type": "string" },
+            "formacao": { "type": "string" },
+            "registroConselho": { "type": "string" },
+            "art": { "type": "string" },
+            "ctfAida": { "type": "string" }
+          }
+        },
+        "objetivosPrada": {
+            "type": "array",
+            "items": { "type": "string" }
+        },
+        "objetivoDescricao": {
+            "type": "string"
+        },
+        "areasRecuperacao": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "identificacao": { "type": "string" },
+                    "descricao": { "type": "string" },
+                    "extensao": { "type": "number" },
+                    "justificativa": { "type": "string" }
+                }
+            }
+        },
+        "cronograma": {
+          "type": "array",
+          "description": "Execution and monitoring schedule.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "etapa": { "type": "string" },
+              "dataInicio": { "type": "string", "format": "date-time" },
+              "dataFim": { "type": "string", "format": "date-time" }
+            }
+          }
+        },
+        "metodologiaAtracaoFauna": {
+          "type": "array",
+          "description": "List of methodologies for fauna attraction.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "titulo": { "type": "string" },
+              "descricao": { "type": "string" }
+            }
+          }
+        },
+        "opcaoPrada": {
+          "type": "string",
+          "description": "Option for PRADA submission (WebAmbiente or Projeto-Técnico).",
+          "enum": ["WebAmbiente", "Projeto-Técnico"]
+        },
+        "formasDeReconstituicao": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "reconstituicaoDescricao": { "type": "string" },
+        "regeneracaoNatural": { "type": "string" },
+        "enriquecimento": { "type": "string" },
+        "reflorestamento": { "type": "string" },
+        "especiesIndicadas": {
+          "type": "object",
+          "properties": {
+            "pioneiras": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "secundarias": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "climax": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "frutiferas": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "exoticas": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "justificativaExoticas": {
+              "type": "string"
+            }
+          }
+        },
+        "projetoImplantacao": {
+          "type": "object",
+          "properties": {
+            "combateFormigas": { "type": "string" },
+            "preparoSolo": { "type": "string" },
+            "espacamentoAlinhamento": { "type": "string" },
+            "coveamentoAdubacao": { "type": "string" },
+            "plantio": { "type": "string" },
+            "coroamento": { "type": "string" },
+            "tratosCulturais": { "type": "string" },
+            "replantio": { "type": "string" },
+            "preservacaoRecursos": { "type": "string" },
+            "atracaoFauna": { "type": "string" }
+          }
+        },
+        "avaliacaoResultados": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "metrica": { "type": "string" },
+                    "indicador": { "type": "string" },
+                    "graduacao": { "type": "number" }
+                }
+            }
+        },
+        "referenciasBibliograficas": {
+          "type": "string",
+          "description": "Bibliographic references for the project."
+        }
+      },
+      "required": ["id"]
+    },
+     "PTRF": {
+      "title": "PTRF",
+      "description": "Represents a PTRF (Projeto Técnico de Recomposição de Flora) form.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "status": { "type": "string", "enum": ["Rascunho", "Aprovado"], "description": "The status of the PTRF." },
+        "requerente": {
+          "type": "object",
+          "properties": {
+            "clientId": { "type": "string" },
+            "nome": { "type": "string" },
+            "cpfCnpj": { "type": "string" }
+          },
+          "required": ["nome", "cpfCnpj"]
+        },
+        "empreendimento": {
+          "type": "object",
+          "properties": {
+            "projectId": { "type": "string" },
+            "nome": { "type": "string" },
+            "car": { "type": "string" }
+          },
+          "required": ["nome", "car"]
+        },
+        "responsavelTecnico": {
+          "type": "object",
+          "properties": {
+            "nome": { "type": "string" },
+            "cpf": { "type": "string" },
+            "formacao": { "type": "string" },
+            "registroConselho": { "type": "string" }
+          },
+          "required": ["nome", "cpf", "formacao", "registroConselho"]
+        },
+        "objetivoDescricao": { "type": "string" },
+        "referenciasBibliograficas": { "type": "string" }
+      },
+      "required": ["requerente", "empreendimento", "responsavelTecnico", "objetivoDescricao"]
+    },
+    "RCA": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "RCA",
+      "description": "Represents an Environmental Control Report (Relatório de Controle Ambiental).",
+      "properties": {
+        "id": { "type": "string" },
+        "status": { "type": "string", "enum": ["Rascunho", "Aprovado"], "description": "The status of the RCA." },
+        "activity": { "type": "string" },
+        "subActivity": { "type": "string" },
+        "termoReferencia": {
+            "type": "object",
+            "properties": {
+                "titulo": { "type": "string" },
+                "processo": { "type": "string" },
+                "dataEmissao": { "type": "string", "format": "date-time" },
+                "versao": { "type": "string" }
+            }
+        },
+        "empreendedor": {
+            "type": "object",
+            "properties": {
+                "clientId": { "type": "string" },
+                "nome": { "type": "string" },
+                "cpfCnpj": { "type": "string" },
+                "identidade": { "type": "string" },
+                "orgaoExpedidor": { "type": "string" },
+                "uf": { "type": "string" },
+                "endereco": { "type": "string" },
+                "caixaPostal": { "type": "string" },
+                "municipio": { "type": "string" },
+                "distrito": { "type": "string" },
+                "cep": { "type": "string" },
+                "ddd": { "type": "string" },
+                "fone": { "type": "string" },
+                "fax": { "type": "string" },
+                "email": { "type": "string", "format": "email" },
+                "tipoPessoa": { "type": "string", "enum": ["Pessoa Física", "Pessoa Jurídica"] },
+                "cadastroProdutorRural": { "type": "string" },
+                "condicao": { "type": "string", "enum": ["Proprietário", "Arrendatário", "Parceiro", "Posseiro", "Outros"] },
+                "cargo": { "type": "string" }
+            }
+        },
+        "empreendimento": {
+            "type": "object",
+            "properties": {
+                "projectId": { "type": "string" },
+                "nome": { "type": "string" },
+                "inscricaoIncra": { "type": "string" },
+                "nomeFantasia": { "type": "string" },
+                "cnpj": { "type": "string" },
+                "zonaRural": { "type": "string", "enum": ["Sim", "Não", "Residencial", "Comercial"] },
+                "endereco": { "type": "string" },
+                "caixaPostal": { "type": "string" },
+                "municipio": { "type": "string" },
+                "distrito": { "type": "string" },
+                "uf": { "type": "string" },
+                "cep": { "type": "string" },
+                "ddd": { "type": "string" },
+                "fone": { "type": "string" },
+                "fax": { "type": "string" },
+                "email": { "type": "string", "format": "email" },
+                "inscricaoEstadual": { "type": "string" },
+                "inscricaoMunicipal": { "type": "string" },
+                "correspondenciaIsSame": { "type": "boolean" },
+                "correspondenceAddress": { "type": "string" },
+                "correspondenceCaixaPostal": { "type": "string" },
+                "correspondenceMunicipio": { "type": "string" },
+                "correspondenceUf": { "type": "string" },
+                "correspondenceCep": { "type": "string" },
+                "correspondenceDdd": { "type": "string" },
+                "correspondenceFone": { "type": "string" },
+                "correspondenceFax": { "type": "string" },
+                "correspondenceEmail": { "type": "string", "format": "email" }
+            }
+        },
+        "responsavelAmbiental": {
+            "type": "object",
+            "properties": {
+                "nome": { "type": "string" },
+                "cpf": { "type": "string" },
+                "registroConselho": { "type": "string" },
+                "art": { "type": "string" },
+                "endereco": { "type": "string" },
+                "caixaPostal": { "type": "string" },
+                "municipio": { "type": "string" },
+                "distrito": { "type": "string" },
+                "uf": { "type": "string" },
+                "cep": { "type": "string" },
+                "ddd": { "type": "string" },
+                "fone": { "type": "string" },
+                "fax": { "type": "string" },
+                "email": { "type": "string", "format": "email" }
+            }
+        },
+         "geographicLocation": {
+          "type": "object",
+          "description": "Geographic location of the property.",
+          "properties": {
+            "datum": {
+              "type": "string",
+              "enum": ["SAD-69", "WGS-84", "Córrego Alegre"]
+            },
+            "format": {
+              "type": "string",
+              "enum": ["Lat/Long", "UTM"]
+            },
+            "latLong": {
+              "type": "object",
+              "properties": {
+                "lat": {
+                  "type": "object",
+                  "properties": {
+                    "grau": { "type": "string" },
+                    "min": { "type": "string" },
+                    "seg": { "type": "string" }
+                  }
+                },
+                "long": {
+                  "type": "object",
+                  "properties": {
+                    "grau": { "type": "string" },
+                    "min": { "type": "string" },
+                    "seg": { "type": "string" }
+                  }
+                }
+              }
+            },
+            "utm": {
+              "type": "object",
+              "properties": {
+                "x": { "type": "string" },
+                "y": { "type": "string" },
+                "fuso": { "type": "string", "enum": ["22", "23", "24"] }
+              }
+            },
+            "local": { "type": "string" },
+            "additionalLocationInfo": { "type": "string" },
+            "hydrographicBasin": { "type": "string" },
+            "hydrographicSubBasin": { "type": "string" },
+            "upgrh": { "type": "string" },
+            "nearestWaterCourse": { "type": "string" }
+          }
+        },
+        "zeeGeofisico": {
+          "type": "object",
+          "description": "ZEE Geofisico e Biotico data",
+          "properties": {
+            "potencialidadeSocial": { "$ref": "#/definitions/ZeeItem" },
+            "vulnerabilidadeNatural": { "$ref": "#/definitions/ZeeItem" },
+            "suscetibilidadeErosao": { "$ref": "#/definitions/ZeeItem" },
+            "riscoAmbiental": { "$ref": "#/definitions/ZeeItem" },
+            "qualidadeAguaSuperficial": { "$ref": "#/definitions/ZeeItem" },
+            "indiceHidrico": { "$ref": "#/definitions/ZeeItem" },
+            "vulnerabilidadeContaminacaoSolo": { "$ref": "#/definitions/ZeeItem" },
+            "vulnerabilidadeAguaSuperficial": { "$ref": "#/definitions/ZeeItem" },
+            "taxaMateriaOrganicaSolo": { "$ref": "#/definitions/ZeeItem" },
+            "integridadeFauna": { "$ref": "#/definitions/ZeeItem" },
+            "integridadeFlora": { "$ref": "#/definitions/ZeeItem" },
+            "exposicaoSolo": { "$ref": "#/definitions/ZeeItem" },
+            "vulnerabilidadeCompactacaoSolo": { "$ref": "#/definitions/ZeeItem" }
+          }
+        },
+        "zeeSocioeconomico": {
+          "type": "array",
+          "description": "ZEE Socioeconomico data for multiple municipalities",
+          "items": { "$ref": "#/definitions/ZeeSocioeconomicoItem" }
+        }
+      },
+      "required": ["id"]
+    },
+    "PCA": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "PCA",
+      "description": "Represents an Environmental Control Plan (Plano de Controle Ambiental).",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the PCA document." },
+        "status": { "type": "string", "enum": ["Rascunho", "Aprovado"], "description": "The status of the PCA." },
+        "termoReferencia": {
+          "type": "object",
+          "properties": {
+            "titulo": { "type": "string", "description": "Title of the Term of Reference." },
+            "processo": { "type": "string", "description": "Administrative process number." },
+            "dataEmissao": { "type": "string", "format": "date-time", "description": "Date of issuance." },
+            "versao": { "type": "string", "description": "Document version." }
+          }
+        },
+        "empreendedor": {
+          "type": "object",
+          "properties": {
+            "clientId": { "type": "string", "description": "Reference to the Client entity." },
+            "nome": { "type": "string" },
+            "cpfCnpj": { "type": "string" },
+            "endereco": { "type": "string" },
+            "contato": { "type": "string", "description": "Phone and/or email." }
+          }
+        },
+        "empreendimento": {
+          "type": "object",
+          "properties": {
+            "projectId": { "type": "string", "description": "Reference to the Project entity." },
+            "nome": { "type": "string" },
+            "municipio": { "type": "string" },
+            "endereco": { "type": "string" },
+            "coordenadas": { "type": "string" },
+            "atividade": { "type": "string" },
+            "tipologia": { "type": "string", "description": "Typology/Porte/Class of the project." },
+            "faseLicenciamento": { "type": "string", "enum": ["LP", "LI", "LO", "AAF", "Outra"] }
+          }
+        },
+        "objetoEstudo": {
+          "type": "object",
+          "properties": {
+            "objeto": { "type": "string", "description": "The specific environmental study required (EIA/RIMA, PCA, etc.)." },
+            "fundamentacaoLegal": { "type": "string", "description": "The legal basis for the study." }
+          }
+        },
+        "conteudoEstudo": {
+          "type": "object",
+          "properties": {
+            "introducao": { "type": "string" },
+            "caracterizacaoEmpreendimento": { "type": "string" },
+            "diagnosticoMeioFisico": { "type": "string" },
+            "diagnosticoMeioBiotico": { "type": "string" },
+            "diagnosticoMeioSocioeconomico": { "type": "string" },
+            "analiseImpactos": { "type": "string" },
+            "medidasMitigadoras": { "type": "string" },
+            "programasAmbientais": { "type": "string" },
+            "conclusao": { "type": "string" },
+            "referencias": { "type": "string" },
+            "anexos": { "type": "string", "description": "Description of attachments." }
+          }
+        },
+        "equipeTecnica": {
+          "type": "object",
+          "properties": {
+            "qualificacoes": { "type": "string" },
+            "arts": { "type": "string", "description": "List of ART/RRT numbers." }
+          }
+        }
+      },
+      "required": ["id", "empreendimento"]
+    },
+    "PIA": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "PIA",
+      "description": "Represents a Environmental Intervention Plan (Plano de Intervenção Ambiental).",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the PIA document." },
+        "type": {
+            "type": "string",
+            "description": "The type of PIA form.",
+            "enum": ["Simplificado", "Corretivo", "Inventário Florestal", "Censo Florestal"]
+        },
+        "status": { "type": "string", "enum": ["Rascunho", "Aprovado"], "description": "The status of the PIA." },
+        "requerente": {
+          "type": "object",
+          "properties": {
+            "clientId": { "type": "string" },
+            "nome": { "type": "string" },
+            "cpfCnpj": { "type": "string" }
+          }
+        },
+        "empreendimento": {
+          "type": "object",
+          "properties": {
+            "projectId": { "type": "string" },
+            "nome": { "type": "string" }
+          }
+        }
+      },
+      "required": ["id", "type"]
+    },
+    "EiaRima": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "EIA/RIMA",
+      "description": "Represents an Environmental Impact Study and Report.",
+      "properties": {
+        "id": { "type": "string" },
+        "status": { "type": "string", "enum": ["Rascunho", "Aprovado"], "description": "The status of the study." },
+        "empreendimento": {
+          "type": "object",
+          "properties": {
+            "projectId": { "type": "string" },
+            "nome": { "type": "string" }
+          }
+        },
+        "requerente": {
+          "type": "object",
+          "properties": {
+            "clientId": { "type": "string" },
+            "nome": { "type": "string" }
+          }
+        },
+        "processo": { "type": "string", "description": "Associated environmental process number." }
+      },
+      "required": ["id", "empreendimento", "requerente"]
+    },
+    "Inspection": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Inspection",
+        "description": "Represents an inspection or survey record.",
+        "type": "object",
+        "properties": {
+            "empreendedorId": { "type": "string", "description": "Reference to the inspected Empreendedor." },
+            "projectId": { "type": "string", "description": "Reference to the inspected Project." },
+            "inspectionDate": { "type": "string", "format": "date-time", "description": "Date of the inspection." },
+            "inspectorId": { "type": "string", "description": "UID of the user who performed the inspection." },
+            "inspectorName": { "type": "string", "description": "Name of the user who performed the inspection." },
+            "status": { "type": "string", "enum": ["Em Aberto", "Aprovada"], "description": "The status of the inspection record." },
+            "accompaniedBy": { "type": "string", "description": "Name of the person who accompanied the inspection." },
+            "signatureUrl": { "type": "string", "description": "URL of the uploaded digital signature image." },
+            "inconformidades": {
+                "type": "array",
+                "description": "List of non-conformities found during the inspection.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "description": { "type": "string", "description": "Detailed notes and findings of the non-conformity." },
+                        "criticality": { "type": "string", "enum": ["Baixa", "Média", "Alta", "Urgente"], "description": "Criticality level of the finding." },
+                        "imageUrls": {
+                            "type": "array",
+                            "description": "List of URLs for uploaded images related to the non-conformity.",
+                            "items": { "type": "string" }
+                        }
+                    },
+                    "required": ["description", "criticality"]
+                }
+            }
+        },
+        "required": ["empreendedorId", "projectId", "inspectionDate", "inspectorId", "inconformidades"]
+    },
+    "Notification": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Notification",
+      "type": "object",
+      "description": "Represents a user notification.",
+      "properties": {
+        "userId": { "type": "string", "description": "The UID of the user this notification is for." },
+        "title": { "type": "string", "description": "The title of the notification." },
+        "description": { "type": "string", "description": "The detailed message of the notification." },
+        "link": { "type": "string", "description": "An optional URL to a relevant page." },
+        "isRead": { "type": "boolean", "description": "Whether the user has read the notification." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "The server timestamp when the notification was created." }
+      },
+      "required": ["userId", "title", "description", "isRead", "createdAt"]
+    },
+    "CharcoalProductionPerformance": {
+        "title": "Charcoal Production Performance",
+        "description": "Represents a performance report for charcoal production.",
+        "type": "object",
+        "properties": {
+            "numeroDocumento": { "type": "string", "description": "The document number." },
+            "data": { "type": "string", "format": "date-time", "description": "The date of the report." },
+            "mesReferencia": { "type": "string", "description": "The reference month for the report (YYYY-MM)." },
+            "proprietario": {
+                "type": "object",
+                "properties": {
+                    "nome": { "type": "string" },
+                    "endereco": { "type": "string" },
+                    "municipio": { "type": "string" },
+                    "cep": { "type": "string" },
+                    "telefone": { "type": "string" }
+                }
+            },
+            "empreendimento": {
+                "type": "object",
+                "properties": {
+                    "denominacao": { "type": "string" },
+                    "areaTotal": { "type": "number" },
+                    "endereco": { "type": "string" },
+                    "paCopam": { "type": "string" },
+                    "municipioDistrito": { "type": "string" },
+                    "cep": { "type": "string" }
+                }
+            },
+            "dadosMadeira": {
+                "type": "object",
+                "properties": {
+                    "dataColheita": { "type": "string", "format": "date-time" },
+                    "periodo": { "type": "string", "enum": ["chuvoso", "seca"] },
+                    "residuos": { "type": "boolean" },
+                    "umidadeEstimada": { "type": "number" },
+                    "tempoMedioSecagem": { "type": "number" }
+                }
+            },
+            "carbonizacao": {
+                "type": "object",
+                "properties": {
+                    "bateladasMes": { "type": "number" },
+                    "volumeMadeiraEnfornada": { "type": "number" },
+                    "volumeCarvaoProduzido": { "type": "number" },
+                    "rendimentoVolumetrico": { "type": "number" },
+                    "rendimentoGravimetrico": { "type": "number" }
+                }
+            },
+             "temperaturaMedia": {
+                "type": "object",
+                "properties": {
+                    "fornosAmostrados": { "type": "number" },
+                    "medicoesTotais": { "type": "number" },
+                    "temperatura": { "type": "number" },
+                    "realizadaPor": { "type": "array", "items": { "type": "string", "enum": ["Pirômetro", "Termopares", "Outro"] } },
+                    "outro": { "type": "string" }
+                }
+            },
+            "integridadeFornos": {
+                "type": "object",
+                "properties": {
+                    "manutencaoEstrutura": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "data": { "type": "string", "format": "date-time" },
+                                "duracao": { "type": "string" },
+                                "operacao": { "type": "string" }
+                            }
+                        }
+                    },
+                    "limpezaPiso": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "data": { "type": "string", "format": "date-time" },
+                                "duracao": { "type": "string" }
+                            }
+                        }
+                    },
+                    "limpezaConexoes": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "data": { "type": "string", "format": "date-time" },
+                                "duracao": { "type": "string" },
+                                "operacao": { "type": "string" }
+                            }
+                        }
+                    }
+                }
+            },
+            "createdAt": { "type": "string", "format": "date-time" }
+        }
+    },
+    "TransporteResiduosPerigosos": {
+        "title": "Transporte de Resíduos Perigosos",
+        "description": "Representa um relatório descritivo para transporte de resíduos perigosos.",
+        "type": "object",
+        "properties": {
+            "empreendedor": {
+                "type": "object",
+                "properties": {
+                    "id": { "type": "string" },
+                    "nome": { "type": "string" },
+                    "cnpjCpf": { "type": "string" },
+                    "endereco": { "type": "string" },
+                    "telefone": { "type": "string" },
+                    "email": { "type": "string", "format": "email" }
+                }
+            },
+            "empreendimento": {
+                "type": "object",
+                "properties": {
+                    "id": { "type": "string" },
+                    "nome": { "type": "string" },
+                    "endereco": { "type": "string" },
+                    "municipioUf": { "type": "string" }
+                }
+            },
+            "empresaResponsavel": {
+                "type": "object",
+                "properties": {
+                    "id": { "type": "string" },
+                    "razaoSocial": { "type": "string" },
+                    "endereco": { "type": "string" },
+                    "cnpjCpf": { "type": "string" },
+                    "telefone": { "type": "string" },
+                    "email": { "type": "string", "format": "email" },
+                    "ctfAida": { "type": "string" }
+                }
+            },
+            "responsavelTecnico": {
+                "type": "object",
+                "properties": {
+                    "id": { "type": "string" },
+                    "nome": { "type": "string" },
+                    "formacao": { "type": "string" },
+                    "registroClasse": { "type": "string" },
+                    "art": { "type": "string" },
+                    "ctfAidaIbama": { "type": "string" }
+                }
+            },
+            "veiculosTransporte": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "tipo": { "type": "string" },
+                        "placa": { "type": "string" },
+                        "anoFabricacao": { "type": "string" },
+                        "acondicionamento": { "type": "string", "enum": ["Granel", "Fracionado"] },
+                        "civNumero": { "type": "string" },
+                        "civValidade": { "type": "string", "format": "date" }
+                    }
+                }
+            },
+            "equipamentosGranel": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "tipoCarroceria": { "type": "string" },
+                        "placaFabricacao": { "type": "string" },
+                        "anoFabricacao": { "type": "string" },
+                        "cippNumero": { "type": "string" },
+                        "cippValidade": { "type": "string", "format": "date" }
+                    }
+                }
+            },
+            "classificacaoProdutos": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "nomeTecnico": { "type": "string" },
+                        "nomeComercial": { "type": "string" },
+                        "numeroOnu": { "type": "string" },
+                        "classeRisco": { "type": "string" },
+                        "acondicionamento": { "type": "string" }
+                    }
+                }
+            },
+            "classificacaoResiduos": {
+                 "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "nomeTecnico": { "type": "string" },
+                        "nomeComercial": { "type": "string" },
+                        "numeroOnu": { "type": "string" },
+                        "classeRisco": { "type": "string" },
+                        "acondicionamento": { "type": "string" }
+                    }
+                }
+            },
+            "origemDestinoProdutos": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "produto": { "type": "string" },
+                        "produtorNome": { "type": "string" },
+                        "produtorEndereco": { "type": "string" },
+                        "consumidorNome": { "type": "string" },
+                        "consumidorEndereco": { "type": "string" },
+                        "viasPreferenciais": { "type": "string" }
+                    }
+                }
+            },
+            "origemDestinoResiduos": {
+                 "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "residuo": { "type": "string" },
+                        "geradorNome": { "type": "string" },
+                        "geradorEndereco": { "type": "string" },
+                        "destinadorNome": { "type": "string" },
+                        "destinadorEndereco": { "type": "string" },
+                        "viasPreferenciais": { "type": "string" }
+                    }
+                }
+            },
+            "anexoART": { "type": "string" },
+            "createdAt": { "type": "string", "format": "date-time" }
+        }
+    }
+  },
+  "definitions": {
+      "InputDetail": {
+          "type": "object",
+          "properties": {
+              "used": { "type": "boolean" },
+              "storageLocation": { "type": "string" }
+          }
+      },
+      "DamSheetData": {
+        "type": "object",
+        "properties": {
+          "areaBaciaContribuicao": { "type": "number" },
+          "areaDesmatamento": { "type": "number" },
+          "elevacaoBase": { "type": "number" },
+          "elevacaoCrista": { "type": "number" },
+          "alturaMaximaFinal": { "type": "number" },
+          "larguraCrista": { "type": "number" },
+          "comprimentoFinalCrista": { "type": "number" },
+          "anguloTaludeGeral": { "type": "number" },
+          "alturaBancadas": { "type": "number" },
+          "larguraBermas": { "type": "number" },
+          "volumeTotalFinalMacico": { "type": "number" },
+          "volumeFinalReservatorio": { "type": "number" },
+          "descargaMaximaVertedouro": { "type": "number" },
+          "areaReservatorio": { "type": "number" },
+          "alturaMaximaAtual": { "type": "number" }
+        }
+      },
+      "TemplateList": {
+        "type": "array",
+        "description": "List of Word templates.",
+        "items": {
+            "type": "object",
+            "properties": {
+                "name": { "type": "string", "description": "Name or identifier for the template." },
+                "url": { "type": "string", "description": "URL of the uploaded template file." }
+            },
+            "required": ["name", "url"]
+        }
+      },
+      "ZeeItem": {
+        "type": "object",
+        "properties": {
+          "classificacao": { "type": "string" },
+          "percentual": { "type": "number" }
+        }
+      },
+      "ZeeSocioeconomicoItem": {
+        "type": "object",
+        "properties": {
+          "municipio": { "type": "string" },
+          "ips": { "type": "number" },
+          "populacao": { "type": "number" },
+          "distribuicaoEspacial": { "type": "number" },
+          "razaoDependencia": { "type": "number" },
+          "malhaRodoviaria": { "type": "number" },
+          "vaIndustria": { "type": "number" },
+          "vaServicos": { "type": "number" },
+          "vaAgropecuaria": { "type": "number" },
+          "exportacoes": { "type": "number" },
+          "doet": { "type": "number" },
+          "concentracaoFundiaria": { "type": "number" },
+          "agricultoresFamiliares": { "type": "number" },
+          "nivelTecnologico": { "type": "number" },
+          "icmsEcologico": { "type": "number" },
+          "renda": { "type": "number" },
+          "saude": { "type": "number" },
+          "educacao": { "type": "number" },
+          "idhM": { "type": "number" },
+          "ocupacaoEconomica": { "type": "number" },
+          "gestaoDesenvolvimentoRural": { "type": "number" },
+          "capacidadeInstitucional": { "type": "number" },
+          "gestaoAmbiental": { "type": "number" },
+          "orgJuridicas": { "type": "number" },
+          "orgFiscalizacaoControle": { "type": "number" },
+          "orgEnsinoSuperiorProfissional": { "type": "number" },
+          "orgSegurancaPublica": { "type": "number" }
+        }
+      }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+      "auditLogs": {
+        "schema": {
+          "$ref": "#/entities/AuditLog"
+        },
+        "description": "Stores user activity audit logs."
+      },
+      "charcoalReports": {
+        "schema": {
+            "$ref": "#/entities/CharcoalProductionPerformance"
+        },
+        "description": "Stores charcoal production performance reports."
+      },
+      "transporteResiduosReports": {
+        "schema": {
+            "$ref": "#/entities/TransporteResiduosPerigosos"
+        },
+        "description": "Stores hazardous waste transport reports."
+      },
+      "dispensaPea": {
+        "schema": { "$ref": "#/entities/DispensaPEA" },
+        "description": "Stores all requests for PEA waiver."
+      },
+      "services": {
+        "schema": { "$ref": "#/entities/Service" },
+        "description": "Stores the company's service catalog."
+      },
+      "oficios": {
+          "schema": { "$ref": "#/entities/Oficio" },
+          "description": "Stores official documents and communications."
+      },
+      "oficioCounters/{year}": {
+          "schema": { "$ref": "#/entities/OficioCounter" },
+          "description": "Tracks sequence numbers for ofícios per year."
+      },
+      "chats/{chatId}": {
+        "schema": { "$ref": "#/entities/Chat" },
+        "description": "Metadata for a chat conversation.",
+        "subcollections": {
+            "messages": {
+                "schema": { "$ref": "#/entities/ChatMessage" },
+                "description": "Messages within a chat."
+            }
+        }
+      },
+      "clients": {
+        "schema": {
+          "$ref": "#/entities/Client"
+        },
+        "description": "Stores all commercial client information for CRM and billing."
+      },
+       "fornecedores": {
+        "schema": {
+          "$ref": "#/entities/Fornecedor"
+        },
+        "description": "Stores all suppliers information for financial purposes."
+      },
+      "empreendedores": {
+        "schema": {
+          "$ref": "#/entities/Empreendedor"
+        },
+        "description": "Stores all technical client information (empreendedores)."
+      },
+       "faunaStudies": {
+        "schema": {
+          "$ref": "#/entities/FaunaStudy"
+        },
+        "description": "Stores all fauna studies (projects and reports)."
+      },
+       "inventories": {
+        "schema": {
+          "$ref": "#/entities/InventoryProject"
+        },
+        "description": "Stores all forest inventory projects."
+      },
+      "licenses": {
+        "schema": { "$ref": "#/entities/License" },
+        "description": "Stores all environmental licenses."
+      },
+      "projects": {
+        "schema": {
+          "$ref": "#/entities/Project"
+        },
+        "description": "Stores all environmental projects, licenses, and studies. Contains an `empreendedorId` field to link to the empreendedor."
+      },
+      "requests": {
+        "schema": {
+            "$ref": "#/entities/Request"
+        },
+        "description": "Stores all new process requests."
+      },
+      "companySettings": {
+        "schema": { "$ref": "#/entities/CompanySettings" },
+        "description": "Stores company-wide settings, like branding assets for reports."
+      },
+      "environmentalCompanies": {
+          "schema": {
+              "$ref": "#/entities/EnvironmentalCompany"
+          },
+          "description": "Stores all environmental companies."
+      },
+      "technicalResponsibles": {
+          "schema": {
+              "$ref": "#/entities/TechnicalResponsible"
+          },
+          "description": "Stores all technical responsible people."
+      },
+       "outorgas": {
+        "schema": {
+          "$ref": "#/entities/WaterPermit"
+        },
+        "description": "Stores all water usage permits (Outorgas). Contains an `empreendedorId` field."
+      },
+      "manualMonitoringLogs": {
+        "schema": {
+            "$ref": "#/entities/ManualMonitoringLog"
+        },
+        "description": "Stores all manual monitoring logs for water permits."
+      },
+      "intervencoes": {
+        "schema": {
+          "$ref": "#/entities/EnvironmentalIntervention"
+        },
+        "description": "Stores all environmental intervention authorizations. Contains an `empreendedorId` field."
+      },
+       "condicionantes": {
+        "schema": {
+          "$ref": "#/entities/Condicionante"
+        },
+        "description": "Stores all environmental conditions for licenses and permits."
+      },
+      "invoices": {
+        "schema": {
+          "$ref": "#/entities/Invoice"
+        },
+        "description": "Stores all invoices. Contains a `clientId` field to link to the client."
+      },
+       "commercialProposals": {
+        "schema": {
+          "$ref": "#/entities/CommercialProposal"
+        },
+        "description": "Stores all commercial proposals/quotes. Contains a `clientId` field to link to the client."
+      },
+      "contracts": {
+        "schema": {
+          "$ref": "#/entities/Contract"
+        },
+        "description": "Stores all service contracts. Contains a `clientId` field to link to the client."
+      },
+      "appointments": {
+        "schema": {
+          "$ref": "#/entities/Appointment"
+        },
+        "description": "Stores all appointments. Contains a `clientId` field to link to the client."
+      },
+      "sustainabilityReports": {
+        "schema": {
+          "$ref": "#/entities/SustainabilityReport"
+        },
+        "description": "Stores all sustainability reports. Contains a `clientId` field to link to the client."
+      },
+      "revenues": {
+        "schema": {
+          "$ref": "#/entities/Revenue"
+        },
+        "description": "Stores all revenue records for financial tracking."
+      },
+      "expenses": {
+        "schema": {
+          "$ref": "#/entities/Expense"
+        },
+        "description": "Stores all expense records for financial tracking."
+      },
+      "users": {
+        "schema": {
+          "$ref": "#/entities/User"
+        },
+        "description": "Stores application user profiles, including their role for permissions."
+      },
+       "users/{userId}/notifications": {
+        "schema": { "$ref": "#/entities/Notification" },
+        "description": "Stores notifications for a specific user."
+      },
+      "opportunities": {
+        "schema": {
+          "$ref": "#/entities/Opportunity"
+        },
+        "description": "Stores all sales opportunities for the CRM."
+      },
+      "contacts": {
+        "schema": {
+          "$ref": "#/entities/Contact"
+        },
+        "description": "Stores all contacts and leads for the CRM."
+      },
+      "pradas": {
+        "schema": {
+          "$ref": "#/entities/Prada"
+        },
+        "description": "Stores all PRADA forms."
+      },
+      "ptrfs": {
+        "schema": {
+          "$ref": "#/entities/PTRF"
+        },
+        "description": "Stores all PTRF forms."
+      },
+      "rcas": {
+        "schema": {
+          "$ref": "#/entities/RCA"
+        },
+        "description": "Stores all Environmental Control Reports (RCA)."
+      },
+      "pcas": {
+        "schema": {
+          "$ref": "#/entities/PCA"
+        },
+        "description": "Stores all Environmental Control Plans (PCA)."
+      },
+      "pias": {
+        "schema": {
+          "$ref": "#/entities/PIA"
+        },
+        "description": "Stores all Environmental Intervention Plans (PIA)."
+      },
+      "eiaRimas": {
+        "schema": {
+          "$ref": "#/entities/EiaRima"
+        },
+        "description": "Stores all Environmental Impact Studies and Reports (EIA/RIMA)."
+      },
+      "inspections": {
+        "schema": {
+          "$ref": "#/entities/Inspection"
+        },
+        "description": "Stores all inspection and survey records."
+      }
+  }
+}
+  

@@ -22,8 +22,12 @@ export async function fetchBrandingImageAsBase64(
     let urlToFetch: string;
 
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-      // Branding salva a URL de download do Storage; usar direto
+      // URL absoluta (ex.: download do Firebase Storage)
       urlToFetch = trimmed;
+    } else if (trimmed.startsWith('/')) {
+      // URL relativa (ex.: /branding/header.png da API/local) — resolver para mesma origem
+      const origin = typeof window !== 'undefined' ? window.location.origin : '';
+      urlToFetch = origin ? origin + trimmed : trimmed;
     } else {
       // Path do Storage (legado)
       const storage = getStorage();

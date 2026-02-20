@@ -5,23 +5,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
+import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { Revenue, Invoice, Client } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 export default function AbcCurvePage() {
-  const firestore = useFirestore();
-  const { user } = useUser();
+  const { firestore, user } = useFirebase();
 
-  const revenuesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'revenues') : null, [firestore]);
+  const revenuesQuery = useMemoFirebase(() => (firestore && user ? collection(firestore, 'revenues') : null), [firestore, user]);
   const { data: revenuesData, isLoading: isLoadingRevenues } = useCollection<Revenue>(revenuesQuery);
-  
-  const invoicesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'invoices') : null, [firestore]);
+
+  const invoicesQuery = useMemoFirebase(() => (firestore && user ? collection(firestore, 'invoices') : null), [firestore, user]);
   const { data: invoicesData, isLoading: isLoadingInvoices } = useCollection<Invoice>(invoicesQuery);
-  
-  const clientsQuery = useMemoFirebase(() => firestore ? collection(firestore, 'clients') : null, [firestore]);
+
+  const clientsQuery = useMemoFirebase(() => (firestore && user ? collection(firestore, 'clients') : null), [firestore, user]);
   const { data: clients, isLoading: isLoadingClients } = useCollection<Client>(clientsQuery);
 
   const clientsMap = useMemo(() => new Map(clients?.map(c => [c.id, c.name])), [clients]);

@@ -93,7 +93,6 @@ export const allNavItems: NavItem[] = [
         { href: '/empreendedores', label: 'Empreendedores', icon: Contact, roles: ['admin', 'technical', 'gestor', 'diretor_fauna', 'supervisor'] },
         { href: '/projects', label: 'Empreendimentos', icon: Building, roles: ['admin', 'technical', 'gestor', 'diretor_fauna', 'supervisor'] },
         { href: '/responsible-company', label: 'Empresa Responsável', icon: Building2, roles: ['admin', 'technical', 'gestor', 'diretor_fauna', 'supervisor'] },
-        { href: '/technical-responsible', label: 'Responsável Técnico', icon: HardHat, roles: ['admin', 'technical', 'gestor', 'diretor_fauna', 'supervisor'] },
     ]
   },
   {
@@ -121,12 +120,11 @@ export const allNavItems: NavItem[] = [
   },
   { href: '/inspections', label: 'Fiscalização', icon: SearchCheck, roles: ['admin', 'technical', 'gestor', 'supervisor'] },
   { href: '/requests', label: 'Processos', icon: FolderKanban, roles: ['admin', 'technical', 'gestor', 'supervisor'] },
-   {
+  {
     label: 'Elaboração de Estudos',
     icon: BookText,
     roles: ['admin', 'technical', 'gestor', 'supervisor', 'diretor_fauna'],
-     subItems: [
-      // Análise Ambiental: relatórios socioambientais e geoespacial
+    subItems: [
       { href: '/studies/analise-socioambiental', label: 'Análise Socioambiental', icon: FileText, roles: ['admin', 'technical', 'gestor', 'supervisor', 'diretor_fauna'] },
       { href: '/analise-ambiental', label: 'Análise Geoespacial (IA)', icon: Globe, roles: ['admin', 'technical', 'gestor', 'supervisor', 'diretor_fauna'] },
       { href: '/studies/assistant', label: 'Assistente IA', icon: BrainCircuit, roles: ['admin', 'technical', 'gestor', 'supervisor', 'diretor_fauna'] },
@@ -146,7 +144,7 @@ export const allNavItems: NavItem[] = [
       { href: '/studies/seguranca-barragens', label: 'Segurança de Barragens', icon: Shield, roles: ['admin', 'technical', 'gestor', 'supervisor'] },
       { href: '/studies/cavidades', label: 'Estudo de Cavidades', icon: Mountain, roles: ['admin', 'technical', 'gestor', 'supervisor', 'diretor_fauna'] },
       { href: '/studies/relatorios-diversos', label: 'Relatórios Diversos', icon: FileArchive, roles: ['admin', 'technical', 'gestor', 'supervisor', 'diretor_fauna'] },
-    ]
+    ],
   },
   {
     label: 'Vendas & CRM',
@@ -219,9 +217,10 @@ export const allNavItems: NavItem[] = [
     icon: Settings,
     roles: ['admin', 'client', 'technical', 'sales', 'financial', 'gestor', 'supervisor', 'diretor_fauna'],
     subItems: [
-        { href: '/settings', label: 'Configurações Gerais', icon: Settings, roles: ['admin'] },
+        { href: '/settings/company', label: 'Informações da Empresa', icon: Building, roles: ['admin'] },
+        { href: '/technical-responsible', label: 'Responsáveis Técnicos', icon: HardHat, roles: ['admin'] },
         { href: '/settings#identidade-visual', label: 'Identidade Visual', icon: Palette, roles: ['admin'] },
-        { href: '/settings/appearance', label: 'Aparência', icon: Palette, roles: ['admin', 'client', 'technical', 'sales', 'financial', 'gestor', 'supervisor', 'diretor_fauna'] },
+        { href: '/settings/templates', label: 'Templates', icon: FileText, roles: ['admin'] },
         { href: '/users', label: 'Usuários', icon: UserCog, roles: ['admin', 'client', 'sales', 'supervisor', 'technical', 'diretor_fauna', 'financial'] },
         { href: '/audit-log', label: 'Log de Auditoria', icon: History, roles: ['admin', 'supervisor'] },
         { href: '/settings/files', label: 'Explorador de Arquivos', icon: Folder, roles: ['admin'] },

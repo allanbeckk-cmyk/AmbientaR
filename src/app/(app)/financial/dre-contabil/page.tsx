@@ -13,11 +13,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { Invoice, Revenue, Expense } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BarChart2, TrendingUp, TrendingDown, Minus, FileDown, Printer } from 'lucide-react';
+import { BarChart2, TrendingUp, TrendingDown, Minus, FileDown, Printer, Link2 } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -28,6 +28,8 @@ import {
 } from '@/components/ui/table';
 import jsPDF from 'jspdf';
 import { useToast } from '@/hooks/use-toast';
+import { fetchBrandingImageAsBase64 } from '@/lib/branding-pdf';
+import { useLocalBranding } from '@/hooks/use-local-branding';
 
 const currentYear = new Date().getFullYear();
 const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
@@ -36,56 +38,63 @@ function formatCurrency(value: number) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 }
 
+/** Retorna YYYY-MM-DD para comparação segura; string vazia se inválido */
+function datePart(dateStr: string | undefined): string {
+  if (dateStr == null || dateStr === '') return '';
+  const s = String(dateStr).slice(0, 10);
+  const d = new Date(s);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toISOString().slice(0, 10);
+}
+
 export default function DreContabilPage() {
   const [selectedYear, setSelectedYear] = useState<string>(String(currentYear));
   const printRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-  const firestore = useFirestore();
+  const { firestore, user } = useFirebase();
+  const { data: brandingData } = useLocalBranding();
 
   const invoicesQuery = useMemoFirebase(
-    () => (firestore ? collection(firestore, 'invoices') : null),
-    [firestore]
+    () => (firestore && user ? collection(firestore, 'invoices') : null),
+    [firestore, user]
   );
   const { data: invoices, isLoading: isLoadingInvoices } = useCollection<Invoice>(invoicesQuery);
 
   const revenuesQuery = useMemoFirebase(
-    () => (firestore ? collection(firestore, 'revenues') : null),
-    [firestore]
+    () => (firestore && user ? collection(firestore, 'revenues') : null),
+    [firestore, user]
   );
   const { data: revenues, isLoading: isLoadingRevenues } = useCollection<Revenue>(revenuesQuery);
 
   const expensesQuery = useMemoFirebase(
-    () => (firestore ? collection(firestore, 'expenses') : null),
-    [firestore]
+    () => (firestore && user ? collection(firestore, 'expenses') : null),
+    [firestore, user]
   );
   const { data: expenses, isLoading: isLoadingExpenses } = useCollection<Expense>(expensesQuery);
 
   const dre = useMemo(() => {
     const year = parseInt(selectedYear, 10);
-    if (!invoices || !revenues || !expenses) return null;
+    if (Number.isNaN(year) || !invoices || !revenues || !expenses) return null;
 
-    const start = new Date(year, 0, 1);
-    const end = new Date(year, 11, 31, 23, 59, 59);
+    const start = `${year}-01-01`;
+    const end = `${year}-12-31`;
 
-    const inPeriod = (dateStr: string) => {
-      const d = new Date(dateStr);
-      return d >= start && d <= end;
-    };
+    const inPeriod = (part: string) => part >= start && part <= end;
 
     const receitaFaturas = invoices
-      .filter((i) => i.status === 'Paid' && inPeriod(i.invoiceDate))
-      .reduce((acc, i) => acc + i.amount, 0);
+      .filter((i) => i.status === 'Paid' && inPeriod(datePart(i.invoiceDate)))
+      .reduce((acc, i) => acc + (Number(i.amount) || 0), 0);
 
     const receitaCaixa = revenues
-      .filter((r) => inPeriod(r.date))
-      .reduce((acc, r) => acc + r.amount, 0);
+      .filter((r) => inPeriod(datePart(r.date)))
+      .reduce((acc, r) => acc + (Number(r.amount) || 0), 0);
 
     const receitaBruta = receitaFaturas + receitaCaixa;
     const deducoes = 0;
     const receitaLiquida = receitaBruta - deducoes;
     const despesasOperacionais = expenses
-      .filter((e) => inPeriod(e.date))
-      .reduce((acc, e) => acc + e.amount, 0);
+      .filter((e) => inPeriod(datePart(e.date)))
+      .reduce((acc, e) => acc + (Number(e.amount) || 0), 0);
     const resultadoOperacional = receitaLiquida - despesasOperacionais;
     const outrasReceitasDespesas = 0;
     const resultadoLiquido = resultadoOperacional + outrasReceitasDespesas;
@@ -105,12 +114,29 @@ export default function DreContabilPage() {
 
   const isLoading = isLoadingInvoices || isLoadingRevenues || isLoadingExpenses;
 
-  const handleExportPdf = () => {
+  const handleExportPdf = async () => {
     if (!dre) return;
+    const headerBase64 = await fetchBrandingImageAsBase64(brandingData?.headerImageUrl);
+    const footerBase64 = await fetchBrandingImageAsBase64(brandingData?.footerImageUrl);
+    const watermarkBase64 = await fetchBrandingImageAsBase64(brandingData?.watermarkImageUrl);
+
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
     const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
     const margin = 15;
+    const contentWidth = pageWidth - margin * 2;
     let y = 20;
+    if (headerBase64) {
+      doc.addImage(headerBase64, 'PNG', margin, 10, contentWidth, 30);
+      y = 50;
+    }
+    if (watermarkBase64) {
+      const imgProps = doc.getImageProperties(watermarkBase64);
+      const aspectRatio = imgProps.width / imgProps.height;
+      const w = 100;
+      const h = w / aspectRatio;
+      doc.addImage(watermarkBase64, 'PNG', (pageWidth - w) / 2, (pageHeight - h) / 2, w, h, undefined, 'FAST');
+    }
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
     doc.text('Demonstração do Resultado do Exercício (DRE)', pageWidth / 2, y, { align: 'center' });
@@ -137,6 +163,9 @@ export default function DreContabilPage() {
       doc.text(value, pageWidth - margin, y, { align: 'right' });
       y += 7;
     });
+    if (footerBase64) {
+      doc.addImage(footerBase64, 'PNG', 10, pageHeight - 20, pageWidth - 20, 15);
+    }
     doc.save(`DRE_Contabil_${selectedYear}.pdf`);
     toast({ title: 'PDF exportado', description: 'Arquivo DRE_Contabil_' + selectedYear + '.pdf' });
   };
@@ -202,7 +231,7 @@ export default function DreContabilPage() {
               Demonstração do Resultado do Exercício (DRE)
             </CardTitle>
             <CardDescription>
-              Visão contábil do resultado do período. Receitas e despesas realizadas no exercício de {selectedYear}.
+              Resultado do exercício com base nos lançamentos já cadastrados no menu Financeiro: <strong>Faturas</strong> (recebidas/pagas) e <strong>Lançamentos de Caixa</strong> (receitas e despesas). Os valores são coletados automaticamente dessas fontes para o ano selecionado.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -260,6 +289,11 @@ export default function DreContabilPage() {
                     </TableRow>
                   </TableBody>
                 </Table>
+
+                <p className="text-xs text-muted-foreground mt-4 flex items-center gap-1">
+                  <Link2 className="h-3 w-3" />
+                  Dados integrados ao menu Financeiro: Faturas (receita faturada paga) e Lançamentos de Caixa (receitas e despesas).
+                </p>
 
                 <div className="mt-6 flex flex-wrap gap-4">
                   <Card className="flex-1 min-w-[180px]">

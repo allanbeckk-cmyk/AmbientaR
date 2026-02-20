@@ -98,3 +98,27 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ success: false, error: (e as Error).message }, { status: 500 });
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const body = await request.json().catch(() => ({}));
+    const fieldName = body.fieldName as string | undefined;
+    if (!fieldName || !FIELDS.includes(fieldName as 'headerImageUrl' | 'footerImageUrl' | 'watermarkImageUrl')) {
+      return NextResponse.json(
+        { success: false, error: 'fieldName obrigatório e deve ser um de: headerImageUrl, footerImageUrl, watermarkImageUrl.' },
+        { status: 400 }
+      );
+    }
+    await ensureDir();
+    const base = FIELD_TO_FILE[fieldName] ?? fieldName;
+    const entries = await fs.readdir(BRANDING_DIR).catch(() => []);
+    const toRemove = entries.filter((e) => e.startsWith(base + '.') || e === base);
+    for (const name of toRemove) {
+      await fs.unlink(path.join(BRANDING_DIR, name));
+    }
+    return NextResponse.json({ success: true });
+  } catch (e) {
+    console.error('DELETE /api/branding:', e);
+    return NextResponse.json({ success: false, error: (e as Error).message }, { status: 500 });
+  }
+}

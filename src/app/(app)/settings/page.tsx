@@ -3,16 +3,15 @@
 
 import * as React from 'react';
 import { useState, useCallback } from 'react';
-import { doc, setDoc, updateDoc, arrayRemove, getDoc, deleteDoc } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, arrayRemove, getDoc } from 'firebase/firestore';
 import { useFirebase, errorEmitter } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Settings, Building, Palette, HardHat, CheckCircle, Folder, PlusCircle, Pencil, Trash2, Eye, Upload, CloudUpload } from 'lucide-react';
+import { Settings, Palette, CheckCircle, Folder, Upload, CloudUpload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { useCollection, useMemoFirebase, useDoc, useAuth } from '@/firebase';
-import { collection } from 'firebase/firestore';
-import type { EnvironmentalCompany, TechnicalResponsible, CompanySettings, TemplateField, AppUser } from '@/lib/types';
+import { useMemoFirebase, useDoc, useAuth } from '@/firebase';
+import type { CompanySettings, TemplateField, AppUser } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Dialog,
@@ -34,8 +33,6 @@ import {
   AlertDialogTitle,
   AlertDialogFooter,
 } from '@/components/ui/alert-dialog';
-import { CompanyForm } from './company-form';
-import { ResponsibleForm } from '@/app/(app)/technical-responsible/responsible-form';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/page-header';
@@ -139,12 +136,9 @@ export default function SettingsPage() {
     const { toast } = useToast();
     
     // State
-    const [isCompanyDialogOpen, setIsCompanyDialogOpen] = useState(false);
-    const [isResponsibleDialogOpen, setIsResponsibleDialogOpen] = useState(false);
     const [isAlertOpen, setIsAlertOpen] = useState(false);
     const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
-    const [editingResponsible, setEditingResponsible] = useState<TechnicalResponsible | null>(null);
-    const [itemToDelete, setItemToDelete] = useState<{id: string, type: 'responsible' | 'template', field?: TemplateField} | null>(null);
+    const [itemToDelete, setItemToDelete] = useState<{id: string, type: 'template', field?: TemplateField} | null>(null);
     const [currentTemplateList, setCurrentTemplateList] = useState<TemplateField | null>(null);
     
     // Form and Upload states for Templates
@@ -153,22 +147,13 @@ export default function SettingsPage() {
     const [isTemplateLoading, setIsTemplateLoading] = useState(false);
 
     // Firestore Hooks
-    const companyProfileDocRef = useMemoFirebase(() => firestore ? doc(firestore, 'companySettings', 'companyProfile') : null, [firestore]);
-    const { data: companyProfile, isLoading: isLoadingCompanyProfile, mutate: mutateCompanyProfile } = useDoc<Omit<EnvironmentalCompany, 'id'>>(companyProfileDocRef);
-    
-    const responsiblesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'technicalResponsibles') : null, [firestore]);
-    const { data: responsibles, isLoading: isLoadingResponsibles } = useCollection<TechnicalResponsible>(responsiblesQuery);
-
     const brandingDocRef = useMemoFirebase(() => (firestore ? doc(firestore, 'companySettings', 'branding') : null), [firestore]);
     const { data: brandingData, isLoading: isLoadingBranding, refetch: refetchBranding } = useLocalBranding();
 
 
     // Handlers
-    const handleEditCompany = () => setIsCompanyDialogOpen(true);
-    const handleAddNewResponsible = () => { setEditingResponsible(null); setIsResponsibleDialogOpen(true); };
-    const handleEditResponsible = (item: TechnicalResponsible) => { setEditingResponsible(item); setIsResponsibleDialogOpen(true); };
-    const openDeleteConfirm = (id: string, type: 'responsible' | 'template', field?: TemplateField) => {
-        setItemToDelete({id, type, field});
+    const openDeleteConfirm = (id: string, type: 'template', field?: TemplateField) => {
+        setItemToDelete({ id, type, field });
         setIsAlertOpen(true);
     };
     const handleOpenTemplateDialog = (field: TemplateField) => { setCurrentTemplateList(field); setIsTemplateDialogOpen(true); };
@@ -182,17 +167,7 @@ export default function SettingsPage() {
 
     const handleDelete = async () => {
         if (!firestore || !itemToDelete) return;
-        
-        if (itemToDelete.type === 'responsible') {
-            const docRef = doc(firestore, 'technicalResponsibles', itemToDelete.id);
-            try {
-                await deleteDoc(docRef);
-                toast({ title: 'Responsável deletado', description: 'O responsável técnico foi removido.' });
-            } catch (error) {
-                const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'delete' });
-                errorEmitter.emit('permission-error', permissionError);
-            }
-        } else if (itemToDelete.type === 'template' && itemToDelete.field && brandingDocRef) {
+        if (itemToDelete.type === 'template' && itemToDelete.field && brandingDocRef) {
             const fieldName = itemToDelete.field;
             try {
                 const docSnap = await getDoc(brandingDocRef);
@@ -235,80 +210,6 @@ export default function SettingsPage() {
                 <AppearanceForm />
                 {authUser?.role === 'admin' && (
                     <>
-                        <Card>
-                            <CardHeader className="flex flex-row items-start justify-between">
-                                <div>
-                                <CardTitle className="flex items-center gap-2"><Building className="w-5 h-5"/><span>Informações da Empresa (Contratado)</span></CardTitle>
-                                <CardDescription>Estes dados serão usados para preencher os campos de "Contratado" nos contratos.</CardDescription>
-                                </div>
-                                <Button variant="outline" onClick={handleEditCompany}>Editar</Button>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                {isLoadingCompanyProfile ? (
-                                <Skeleton className="h-24 w-full" />
-                                ) : companyProfile ? (
-                                <div className="text-sm space-y-1 text-muted-foreground">
-                                    <p><span className="font-semibold text-foreground">Razão Social:</span> {companyProfile.name}</p>
-                                    <p><span className="font-semibold text-foreground">CNPJ:</span> {companyProfile.cnpj}</p>
-                                    <p><span className="font-semibold text-foreground">Endereço:</span> {companyProfile.address}, {companyProfile.numero}</p>
-                                </div>
-                                ) : (
-                                <p className="text-sm text-muted-foreground">Nenhuma empresa cadastrada. Clique em "Editar" para adicionar.</p>
-                                )}
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardHeader className="flex flex-row items-start justify-between">
-                                <div>
-                                <CardTitle className="flex items-center gap-2"><HardHat className="w-5 h-5"/><span>Responsáveis Técnicos</span></CardTitle>
-                                <CardDescription>Gerencie os profissionais que podem ser selecionados nos contratos.</CardDescription>
-                                </div>
-                                <Button size="sm" onClick={handleAddNewResponsible}><PlusCircle className="mr-2 h-4 w-4" />Adicionar</Button>
-                            </CardHeader>
-                            <CardContent>
-                                <TooltipProvider>
-                                <Table>
-                                    <TableHeader><TableRow><TableHead>Nome</TableHead><TableHead>Profissão</TableHead><TableHead className="hidden md:table-cell">Identidade</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
-                                    <TableBody>
-                                    {isLoadingResponsibles ? Array.from({length: 2}).map((_, i) => (<TableRow key={i}><TableCell colSpan={4}><Skeleton className="h-10 w-full" /></TableCell></TableRow>)) : (responsibles?.map((item) => (
-                                        <TableRow key={item.id}>
-                                        <TableCell className="font-medium">{item.name}</TableCell>
-                                        <TableCell>{item.profession}</TableCell>
-                                        <TableCell className="hidden md:table-cell">{item.identidade}</TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex items-center justify-end gap-1">
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <Button variant="ghost" size="icon" onClick={() => handleEditResponsible(item)}>
-                                                            <Pencil className="h-4 w-4" />
-                                                            <span className="sr-only">Editar</span>
-                                                        </Button>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent><p>Editar responsável</p></TooltipContent>
-                                                </Tooltip>
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => openDeleteConfirm(item.id, 'responsible')}>
-                                                            <Trash2 className="h-4 w-4" />
-                                                            <span className="sr-only">Deletar</span>
-                                                        </Button>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent><p>Deletar responsável</p></TooltipContent>
-                                                </Tooltip>
-                                            </div>
-                                        </TableCell>
-                                        </TableRow>
-                                    )))}
-                                    {!isLoadingResponsibles && responsibles?.length === 0 && (
-                                        <TableRow><TableCell colSpan={4} className="h-24 text-center">Nenhum responsável técnico cadastrado.</TableCell></TableRow>
-                                    )}
-                                    </TableBody>
-                                </Table>
-                                </TooltipProvider>
-                            </CardContent>
-                        </Card>
-                        
                         <Card id="identidade-visual" className="border-primary/50 border-2 scroll-mt-4">
                             <CardHeader>
                             <CardTitle className="flex items-center gap-2"><Settings className="w-5 h-5"/><span>Identidade Visual</span><Badge className="bg-primary hover:bg-primary/90">Premium</Badge></CardTitle>
@@ -356,18 +257,6 @@ export default function SettingsPage() {
             </div>
             </main>
         </div>
-
-        <Dialog open={isCompanyDialogOpen} onOpenChange={setIsCompanyDialogOpen}>
-            <DialogContent className="sm:max-w-3xl flex flex-col h-full max-h-[95vh]">
-            <CompanyForm currentItem={companyProfile} onSuccess={() => { setIsCompanyDialogOpen(false); mutateCompanyProfile(); }} onCancel={() => setIsCompanyDialogOpen(false)} />
-            </DialogContent>
-        </Dialog>
-        
-        <Dialog open={isResponsibleDialogOpen} onOpenChange={setIsResponsibleDialogOpen}>
-            <DialogContent className="sm:max-w-2xl max-h-[90dvh] flex flex-col">
-            <ResponsibleForm currentItem={editingResponsible} onSuccess={() => setIsResponsibleDialogOpen(false)} onCancel={() => setIsResponsibleDialogOpen(false)}/>
-            </DialogContent>
-        </Dialog>
 
         <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
             <AlertDialogContent>

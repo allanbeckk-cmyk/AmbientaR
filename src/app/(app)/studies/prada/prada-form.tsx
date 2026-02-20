@@ -590,7 +590,7 @@ export function PradaForm({ currentItem, onSuccess }: PradaFormProps) {
                                                         {item.label}
                                                         </FormLabel>
                                                     </FormItem>
-                                                    )
+                                                    );
                                                 }}
                                                 />
                                             ))}

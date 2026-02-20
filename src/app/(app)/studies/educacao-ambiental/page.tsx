@@ -97,7 +97,7 @@ export default function EducacaoAmbientalPage() {
             <CardDescription>Lista de programas que foram finalizados e aprovados.</CardDescription>
           </CardHeader>
           <CardContent>
-             <Table>
+            <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Empreendimento</TableHead>
@@ -107,7 +107,7 @@ export default function EducacaoAmbientalPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                 {isLoading ? (
+                {isLoading ? (
                   <TableRow>
                     <TableCell colSpan={4}><Skeleton className="h-10 w-full" /></TableCell>
                   </TableRow>

@@ -10,6 +10,7 @@ import { collection, query, where, getDocs, doc } from 'firebase/firestore';
 import type { Project, Condicionante, Empreendedor, Client, WaterPermit, EnvironmentalIntervention } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import EnvironmentalDashboard from '../environmental-dashboard';
+import AgendaWidget from './agenda-widget';
 
 export default function ClientDashboard() {
   const { user } = useAuth();
@@ -109,6 +110,7 @@ export default function ClientDashboard() {
     <div className="flex flex-col h-full">
       <PageHeader title="Painel do Cliente" />
       <main className="flex-1 overflow-auto p-4 md:p-6 space-y-8">
+         <AgendaWidget />
          <Card>
             <CardHeader>
                 <CardTitle>Bem-vindo(a), {user?.name || 'Cliente'}!</CardTitle>

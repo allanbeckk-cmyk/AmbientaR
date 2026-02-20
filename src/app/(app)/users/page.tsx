@@ -29,6 +29,7 @@ import { useCollection, useMemoFirebase, errorEmitter, useFirebase, useDoc } fro
 import { FirestorePermissionError } from '@/firebase/errors';
 import { collection, deleteDoc, doc, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { fetchBrandingImageAsBase64 } from '@/lib/branding-pdf';
+import { useLocalBranding } from '@/hooks/use-local-branding';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Dialog,
@@ -99,8 +100,7 @@ export default function UsersPage() {
 
   const { data: appUsers, isLoading } = useCollection<AppUser>(usersQuery);
 
-  const brandingDocRef = useMemoFirebase(() => firestore ? doc(firestore, 'companySettings', 'branding') : null, [firestore]);
-  const { data: brandingData } = useDoc<CompanySettings>(brandingDocRef);
+  const { data: brandingData } = useLocalBranding();
 
   const getRoleText = (role: AppUser['role']) => {
     switch (role) {
@@ -145,7 +145,12 @@ export default function UsersPage() {
 
   const handleDelete = () => {
     if (!firestore || !userToDelete || !auth) return;
-    
+    if (user?.role !== 'admin') {
+      toast({ variant: 'destructive', title: 'Sem permissão', description: 'Apenas o perfil administrador pode excluir usuários.' });
+      setIsAlertOpen(false);
+      setUserToDelete(null);
+      return;
+    }
     const userDocRef = doc(firestore, 'users', userToDelete.id);
     deleteDoc(userDocRef)
       .then(() => {
@@ -358,7 +363,7 @@ export default function UsersPage() {
                       <TableHead className="hidden lg:table-cell">CPF/CNPJ</TableHead>
                       <TableHead>Nível</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Ações</TableHead>
+                      <TableHead className="text-right min-w-[152px] w-[152px]">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -370,7 +375,7 @@ export default function UsersPage() {
                             <TableCell className="hidden lg:table-cell"><Skeleton className="h-5 w-32" /></TableCell>
                             <TableCell><Skeleton className="h-5 w-20" /></TableCell>
                             <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
-                            <TableCell className="text-right"><Skeleton className="h-8 w-32" /></TableCell>
+                            <TableCell className="text-right min-w-[152px] w-[152px]"><Skeleton className="h-8 w-32" /></TableCell>
                         </TableRow>
                     ))}
                     {appUsers?.map((appUser) => (
@@ -395,8 +400,8 @@ export default function UsersPage() {
                             {appUser.status === 'active' ? 'Ativo' : 'Inativo'}
                           </Badge>
                         </TableCell>
-                        <TableCell>
-                            <div className="flex items-center justify-end gap-1">
+                        <TableCell className="text-right min-w-[152px] w-[152px]">
+                            <div className="flex items-center justify-end gap-1 flex-nowrap">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <Button variant="ghost" size="icon" onClick={() => handleView(appUser)}>
@@ -417,8 +422,18 @@ export default function UsersPage() {
                                       <TooltipContent><p>Editar usuário</p></TooltipContent>
                                   </Tooltip>
                                 )}
-                               {(user?.role === 'admin' || user?.role === 'supervisor') && (
-                                <>
+                                {user?.role === 'admin' && (
+                                  <Tooltip>
+                                      <TooltipTrigger asChild>
+                                          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => openDeleteConfirm(appUser)}>
+                                              <Trash2 className="h-4 w-4" />
+                                              <span className="sr-only">Excluir</span>
+                                          </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent><p>Excluir usuário (somente administrador)</p></TooltipContent>
+                                  </Tooltip>
+                                )}
+                                {(user?.role === 'admin' || user?.role === 'supervisor') && (
                                   <DropdownMenu>
                                       <Tooltip>
                                           <TooltipTrigger asChild>
@@ -438,20 +453,7 @@ export default function UsersPage() {
                                           <DropdownMenuItem onClick={() => handleGenerateLog(appUser, 'pdf')}>Exportar como .pdf</DropdownMenuItem>
                                       </DropdownMenuContent>
                                   </DropdownMenu>
-
-                                  {user?.role === 'admin' && (
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => openDeleteConfirm(appUser)}>
-                                                <Trash2 className="h-4 w-4" />
-                                                <span className="sr-only">Deletar</span>
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent><p>Deletar usuário</p></TooltipContent>
-                                    </Tooltip>
-                                  )}
-                                </>
-                               )}
+                                )}
                             </div>
                         </TableCell>
                       </TableRow>
@@ -473,6 +475,10 @@ export default function UsersPage() {
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="sm:max-w-xl h-full max-h-[90dvh] flex flex-col">
+              <DialogHeader>
+                <DialogTitle>{editingUser ? 'Editar usuário' : 'Adicionar usuário'}</DialogTitle>
+                <DialogDescription>Preencha os dados do usuário abaixo.</DialogDescription>
+              </DialogHeader>
               <UserForm currentUser={editingUser} onSuccess={() => setIsDialogOpen(false)} />
           </DialogContent>
       </Dialog>

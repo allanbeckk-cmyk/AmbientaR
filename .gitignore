@@ -47,6 +47,9 @@ firestore-debug.log
 # branding local (imagens salvas no notebook)
 /public/branding
 
+# templates carregados (DOCX base para estudos)
+/public/templates
+
 # Cursor / IDE
 .idx/
 .modified

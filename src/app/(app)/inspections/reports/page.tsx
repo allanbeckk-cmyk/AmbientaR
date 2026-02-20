@@ -16,6 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { fetchBrandingImageAsBase64 } from '@/lib/branding-pdf';
+import { useLocalBranding } from '@/hooks/use-local-branding';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 type Report = Inspection;
@@ -87,8 +88,7 @@ export default function InspectionReportsListPage() {
   const { data: empreendedores, isLoading: isLoadingEmpreendedores } = useCollection<Empreendedor>(empreendedoresQuery);
   const empreendedoresMap = React.useMemo(() => new Map(empreendedores?.map(e => [e.id, e.name])), [empreendedores]);
 
-  const brandingDocRef = useMemoFirebase(() => firestore ? doc(firestore, 'companySettings', 'branding') : null, [firestore]);
-  const { data: brandingData } = useDoc<CompanySettings>(brandingDocRef);
+  const { data: brandingData } = useLocalBranding();
 
   const isLoading = isLoadingInspections || isLoadingEmpreendedores || isLoadingProjects || (user?.role === 'client' && empreendedorIdsForUser === undefined);
 

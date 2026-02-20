@@ -248,26 +248,25 @@ export default function CommercialProposalsPage() {
         const client = clientsMap.get(proposal.clientId);
         const pdfDoc = new jsPDF({ unit: 'mm', format: 'a4' });
         
-        const brandingDocRef = doc(firestore, 'companySettings', 'branding');
         const companyProfileDocRef = doc(firestore, 'companySettings', 'companyProfile');
-
-        let brandingData: CompanySettings | null = null;
         let companyProfile: Omit<EnvironmentalCompany, 'id'> | null = null;
+        let brandingData: { headerImageUrl?: string | null; footerImageUrl?: string | null; watermarkImageUrl?: string | null } | null = null;
 
         try {
-            const [brandingSnap, companySnap] = await Promise.all([
-                getDoc(brandingDocRef),
+            const [brandingRes, companySnap] = await Promise.all([
+                fetch('/api/branding'),
                 getDoc(companyProfileDocRef)
             ]);
-            brandingData = brandingSnap.exists() ? brandingSnap.data() as CompanySettings : null;
+            if (brandingRes.ok) brandingData = await brandingRes.json();
             companyProfile = companySnap.exists() ? companySnap.data() as Omit<EnvironmentalCompany, 'id'> : null;
         } catch (error) {
             console.error("Error fetching settings for PDF:", error);
             toast({ variant: 'destructive', title: 'Erro ao buscar dados', description: 'Não foi possível carregar as configurações da empresa.'})
         }
         
-        const headerBase64 = await fetchBrandingImageAsBase64(brandingData?.headerImageUrl);
-        const footerBase64 = await fetchBrandingImageAsBase64(brandingData?.footerImageUrl);
+        const headerBase64 = await fetchBrandingImageAsBase64(brandingData?.headerImageUrl ?? undefined);
+        const footerBase64 = await fetchBrandingImageAsBase64(brandingData?.footerImageUrl ?? undefined);
+        const watermarkBase64 = await fetchBrandingImageAsBase64(brandingData?.watermarkImageUrl ?? undefined);
 
         const pageHeight = pdfDoc.internal.pageSize.getHeight();
         const pageWidth = pdfDoc.internal.pageSize.getWidth();
@@ -281,8 +280,17 @@ export default function CommercialProposalsPage() {
                 docInstance.setPage(i);
                 if (headerBase64) {
                     try {
-                        docInstance.addImage(headerBase64, 'PNG', margins.left, 10, contentWidth, 20); 
+                        docInstance.addImage(headerBase64, 'PNG', margins.left, 10, contentWidth, 20);
                     } catch(e) { console.error("Error adding header image to PDF", e); }
+                }
+                if (watermarkBase64) {
+                    try {
+                        const imgProps = docInstance.getImageProperties(watermarkBase64);
+                        const aspectRatio = imgProps.width / imgProps.height;
+                        const w = 100;
+                        const h = w / aspectRatio;
+                        docInstance.addImage(watermarkBase64, 'PNG', (pageWidth - w) / 2, (pageHeight - h) / 2, w, h, undefined, 'FAST');
+                    } catch(e) { console.error("Error adding watermark to PDF", e); }
                 }
                 if (footerBase64) {
                     try {

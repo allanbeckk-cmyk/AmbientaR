@@ -22,15 +22,19 @@ import {
 } from 'recharts';
 import { DollarSign, TrendingUp, TrendingDown, Receipt } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
+import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { Revenue, Expense, Transaction, Invoice } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
+function safeDateTime(dateStr: string | undefined): number {
+  if (dateStr == null || dateStr === '') return 0;
+  const d = new Date(dateStr);
+  return Number.isNaN(d.getTime()) ? 0 : d.getTime();
+}
 
 export default function FinancialDashboard() {
-  const firestore = useFirestore();
-  const { user } = useUser();
+  const { firestore, user } = useFirebase();
   const revenuesQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
     return collection(firestore, 'revenues');
@@ -59,41 +63,43 @@ export default function FinancialDashboard() {
       ...expenses.map((e) => ({ ...e, type: 'expense' as const })),
     ];
 
-    const totalRevenue = revenues.reduce((acc, r) => acc + r.amount, 0);
-    const totalExpenses = expenses.reduce((acc, e) => acc + e.amount, 0);
+    const totalRevenue = revenues.reduce((acc, r) => acc + (Number(r.amount) || 0), 0);
+    const totalExpenses = expenses.reduce((acc, e) => acc + (Number(e.amount) || 0), 0);
     const totalProfit = totalRevenue - totalExpenses;
 
     const paidInvoices = invoices.filter(inv => inv.status === 'Paid');
-    const totalPaidAmount = paidInvoices.reduce((acc, inv) => acc + inv.amount, 0);
+    const totalPaidAmount = paidInvoices.reduce((acc, inv) => acc + (Number(inv.amount) || 0), 0);
     const averageTicket = paidInvoices.length > 0 ? totalPaidAmount / paidInvoices.length : 0;
 
     const monthlyData: { [key: string]: { revenue: number, expenses: number } } = {};
     const monthNames = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
     allTransactions.forEach(transaction => {
-      const date = new Date(transaction.date);
+      const ts = safeDateTime(transaction.date);
+      if (ts === 0) return;
+      const date = new Date(ts);
       const month = monthNames[date.getMonth()];
       if (!month) return;
-
       if (!monthlyData[month]) {
         monthlyData[month] = { revenue: 0, expenses: 0 };
       }
+      const amount = Number(transaction.amount) || 0;
       if (transaction.type === 'revenue') {
-          monthlyData[month].revenue += transaction.amount;
+        monthlyData[month].revenue += amount;
       } else {
-          monthlyData[month].expenses += transaction.amount;
+        monthlyData[month].expenses += amount;
       }
     });
 
     const chartData = monthNames.map(month => ({
       month,
-      Receita: monthlyData[month]?.revenue || 0,
-      Despesa: monthlyData[month]?.expenses || 0,
+      Receita: monthlyData[month]?.revenue ?? 0,
+      Despesa: monthlyData[month]?.expenses ?? 0,
     })).slice(0, new Date().getMonth() + 1);
 
-    const sortedTransactions = allTransactions
-        .sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-        .slice(0, 5);
+    const sortedTransactions = [...allTransactions]
+      .sort((a, b) => safeDateTime(b.date) - safeDateTime(a.date))
+      .slice(0, 5);
 
 
     return {
@@ -204,11 +210,13 @@ export default function FinancialDashboard() {
                   {!isLoading && recentTransactions.map((transaction) => (
                     <TableRow key={transaction.id}>
                       <TableCell>
-                        <div className="font-medium">{transaction.description}</div>
-                        <div className="text-sm text-muted-foreground">{new Date(transaction.date).toLocaleDateString('pt-BR')}</div>
+                        <div className="font-medium">{transaction.description || '—'}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {transaction.date ? new Date(transaction.date).toLocaleDateString('pt-BR') : '—'}
+                        </div>
                       </TableCell>
                       <TableCell className={cn("text-right", transaction.type === 'revenue' ? 'text-emerald-500' : 'text-red-500')}>
-                        {formatCurrency(transaction.amount)}
+                        {formatCurrency(Number(transaction.amount) || 0)}
                       </TableCell>
                     </TableRow>
                   ))}

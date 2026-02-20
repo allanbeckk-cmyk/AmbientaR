@@ -2,6 +2,8 @@
 
 Se o site funcionava ontem e hoje não abre, siga estes passos **no PowerShell** (abrir como Administrador se precisar).
 
+**Resumo:** na pasta do projeto, use `npm install` (uma vez) e depois `npm run dev`. Acesse **http://localhost:9002** no navegador.
+
 ---
 
 ## 1. Abrir o PowerShell na pasta do projeto

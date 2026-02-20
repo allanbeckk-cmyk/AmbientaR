@@ -17,6 +17,9 @@ export default function RelatoriosDiversosPage() {
     if (reportType === 'transporte-residuos') {
       router.push('/studies/relatorios-diversos/transporte-residuos');
     }
+    if (reportType === 'ptrf-prad') {
+      router.push('/studies/relatorios-diversos/ptrf-prad');
+    }
   };
 
   return (
@@ -24,37 +27,50 @@ export default function RelatoriosDiversosPage() {
       <PageHeader title="Relatórios Diversos" />
       <main className="flex-1 overflow-auto p-4 md:p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card>
+          <Card className="flex h-full flex-col">
             <CardHeader>
               <CardTitle>Performance da Produção de Carvão Vegetal</CardTitle>
               <CardDescription>
                 Relatório para acompanhar o rendimento e eficiência da produção de carvão vegetal de floresta plantada.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="mt-auto">
               <Button className="w-full" onClick={() => handleAddNew('carvao-vegetal')}>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Novo Relatório
               </Button>
             </CardContent>
           </Card>
-           <Card>
+
+          <Card className="flex h-full flex-col">
             <CardHeader>
               <CardTitle>Transporte de Resíduos Perigosos</CardTitle>
               <CardDescription>
                 Relatório descritivo para atividade de transporte de produtos e resíduos perigosos (LAS - Cadastro).
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="mt-auto">
               <Button className="w-full" onClick={() => handleAddNew('transporte-residuos')}>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Novo Relatório
               </Button>
             </CardContent>
           </Card>
-          
-          {/* Outros cards de relatórios diversos podem ser adicionados aqui no futuro */}
 
+          <Card className="flex h-full flex-col">
+            <CardHeader>
+              <CardTitle>Relatório de PTRF/PRAD</CardTitle>
+              <CardDescription>
+                Relatório de Vistória de Acompanhamento de PRAD/PTRF.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="mt-auto">
+              <Button className="w-full" onClick={() => handleAddNew('ptrf-prad')}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Novo Relatório
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </main>
     </div>

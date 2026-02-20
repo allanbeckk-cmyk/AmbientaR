@@ -27,6 +27,7 @@ import { useCollection, useFirebase, useMemoFirebase, errorEmitter, useDoc, useA
 import { collection, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref, getDownloadURL, uploadBytes } from "firebase/storage";
 import { fetchBrandingImageAsBase64 } from '@/lib/branding-pdf';
+import { useLocalBranding } from '@/hooks/use-local-branding';
 import type { Contract, Client, CompanySettings, AppUser } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -41,7 +42,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { FirestorePermissionError } from '@/firebase/errors';
-import jsPDF from 'jspdf';
+import { generateContractPdf } from './contract-pdf';
 import { ptBR } from 'date-fns/locale';
 import { format } from 'date-fns';
 import { ContractForm } from './contract-form';
@@ -90,8 +91,7 @@ export default function ContractsPage() {
 
   const { data: contracts, isLoading: isLoadingContracts } = useCollection<Contract>(contractsQuery);
 
-  const brandingDocRef = useMemoFirebase(() => firestore ? doc(firestore, 'companySettings', 'branding') : null, [firestore]);
-  const { data: brandingData, isLoading: isLoadingBranding } = useDoc<CompanySettings>(brandingDocRef);
+  const { data: brandingData } = useLocalBranding();
   
   const handleAddNew = () => {
     setEditingItem(null);
@@ -186,94 +186,17 @@ export default function ContractsPage() {
   };
 
   const handleGeneratePdf = async (contract: Contract) => {
-    const doc = new jsPDF({
-        unit: 'cm',
-        format: 'a4',
-    });
-    const contratante = contract.contratante;
-    const contratado = contract.contratado;
-    const responsavel = contract.responsavelTecnico;
-
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const margins = { top: 3, left: 3, right: 2, bottom: 2 };
-    const contentWidth = pageWidth - margins.left - margins.right;
-
-    const headerBase64 = await fetchBrandingImageAsBase64(brandingData?.headerImageUrl);
-    const footerBase64 = await fetchBrandingImageAsBase64(brandingData?.footerImageUrl);
-    const watermarkBase64 = await fetchBrandingImageAsBase64(brandingData?.watermarkImageUrl);
-
-    const totalPages = doc.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-        doc.setPage(i);
-        if (headerBase64) {
-            doc.addImage(headerBase64, 'PNG', margins.left, 1.5, contentWidth, 3); // 3cm height
-        }
-        if (watermarkBase64) {
-             const imgProps = doc.getImageProperties(watermarkBase64);
-             const aspectRatio = imgProps.width / imgProps.height;
-             const watermarkWidth = 12;
-             const watermarkHeight = watermarkWidth / aspectRatio;
-             doc.addImage(watermarkBase64, 'PNG', (pageWidth - watermarkWidth) / 2, (pageHeight - watermarkHeight) / 2, watermarkWidth, watermarkHeight, undefined, 'FAST');
-        }
-        if (footerBase64) {
-            doc.addImage(footerBase64, 'PNG', margins.left, pageHeight - 2, contentWidth, 1.5); // 2cm height
-        }
+    try {
+      await generateContractPdf(contract, brandingData ?? undefined, fetchBrandingImageAsBase64);
+      toast({ title: 'PDF gerado', description: 'O contrato foi exportado com todas as cláusulas e assinaturas.' });
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: 'Erro ao gerar PDF',
+        description: err instanceof Error ? err.message : 'Não foi possível gerar o PDF do contrato.',
+        variant: 'destructive',
+      });
     }
-    
-    let yPos = headerBase64 ? margins.top + 2 : margins.top;
-    
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text("CONTRATO PARA PRESTAÇÃO DE SERVIÇOS TÉCNICOS DE ASSESSORIA E CONSULTORIA AMBIENTAL", pageWidth / 2, yPos, { align: 'center', maxWidth: contentWidth });
-    yPos += 2;
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    
-    doc.setFont('helvetica', 'bold');
-    doc.text('CONTRATANTE:', margins.left, yPos);
-    doc.setFont('helvetica', 'normal');
-    yPos += 0.6;
-    const contratanteText = `Pelo presente instrumento particular de Contrato de prestação de serviços no Município de ${contratante.municipio || '_________'} - ${contratante.uf || '__'}, de um lado(a) Sr(a) ${contratante.nome}; CPF/CNPJ ${contratante.cpfCnpj || '__________________'} e Cédula de Identidade nº ${contratante.identidade || '_________'} Emissor ${contratante.emissor || '___'}, nacionalidade ${contratante.nacionalidade || '_________'}, estado Civil ${contratante.estadoCivil || '_________'} logradouro/Endereço ${contratante.endereco || '__________________'}, nº.${contratante.numero || '___'} Bairro ${contratante.bairro || '_________'}, CEP ${contratante.cep || '____-___'}, no município de ${contratante.municipio || '_________'} Estado/UF ${contratante.uf || '__'}.`;
-    const contratanteLines = doc.splitTextToSize(contratanteText, contentWidth);
-    doc.text(contratanteLines, margins.left, yPos, { align: 'justify', maxWidth: contentWidth });
-    yPos += contratanteLines.length * 0.5 + 0.6;
-
-    doc.setFont('helvetica', 'bold');
-    doc.text('CONTRATADO:', margins.left, yPos);
-    doc.setFont('helvetica', 'normal');
-    yPos += 0.6;
-    const contratadoText = `do outro lado o(a) ${contratado.name || '__________________'}, com sede/Logradouro na ${contratado.address || '__________________'}, CNPJ ou CPF ${contratado.cnpj || '__________________'}.`;
-    const contratadoLines = doc.splitTextToSize(contratadoText, contentWidth);
-    doc.text(contratadoLines, margins.left, yPos, { align: 'justify', maxWidth: contentWidth });
-    yPos += contratadoLines.length * 0.5 + 0.6;
-
-    doc.setFont('helvetica', 'bold');
-    doc.text('RESPONSÁVEL TÉCNICO:', margins.left, yPos);
-    doc.setFont('helvetica', 'normal');
-    yPos += 0.6;
-    const responsavelText = `sob responsabilidade técnica do(a) Sr(a). ${responsavel.name || '__________________'}, Formação ${responsavel.profession || '__________________'}, nacionalidade ${responsavel.nacionalidade || '_________'}, estado civil ${responsavel.estadoCivil || '_________'}, CPF ${responsavel.cpf || '__________________'} e Cédula de Identidade nº ${responsavel.identidade || '__________________'} emissor ${responsavel.emissor || '___'}, residente e domiciliado ${responsavel.address || '__________________'}.`;
-    const responsavelLines = doc.splitTextToSize(responsavelText, contentWidth);
-    doc.text(responsavelLines, margins.left, yPos, { align: 'justify', maxWidth: contentWidth });
-    yPos += responsavelLines.length * 0.5 + 0.6;
-
-    const justoText = "Mediantes as cláusulas e condições seguintes tem justo e contrato o que se segue:";
-    const justoLines = doc.splitTextToSize(justoText, contentWidth);
-    doc.text(justoLines, margins.left, yPos, { align: 'justify', maxWidth: contentWidth });
-    yPos += justoLines.length * 0.5 + 1;
-    
-    doc.setFont('helvetica', 'bold');
-    doc.text("CLÁUSULA PRIMEIRA - DO OBJETO", pageWidth / 2, yPos, { align: 'center' });
-    doc.setFont('helvetica', 'normal');
-    yPos += 0.6;
-    const objetoText = `O presente contrato foi elaborado no sentido de atender a demanda solicitada para o empreendimento ${contract.objeto.empreendimento || '__________________'}, no(s) município(s) ${contract.objeto.municipio || '_________'}, estado/UF ${contract.objeto.uf || '__'} e consiste nas seguintes prestações de serviços: ${contract.objeto.servicos}`;
-    const objetoLines = doc.splitTextToSize(objetoText, contentWidth);
-    doc.text(objetoLines, margins.left, yPos, { align: 'justify', maxWidth: contentWidth });
-    
-
-    doc.save(`Contrato_${contract.contratante.nome.replace(/\s+/g, '_')}.pdf`);
-    toast({ title: "PDF Gerado", description: "O contrato foi exportado como PDF." });
   };
 
   const formatDate = (dateString: string) => {

@@ -24,6 +24,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { fetchBrandingImageAsBase64 } from '@/lib/branding-pdf';
+import { useLocalBranding } from '@/hooks/use-local-branding';
 
 
 const DetailItem = ({ label, value }: { label: string, value?: string | null }) => (
@@ -53,9 +54,7 @@ export default function InspectionsListPage() {
   const { data: projects, isLoading: isLoadingProjects } = useCollection<Project>(projectsQuery);
   const projectsMap = React.useMemo(() => new Map(projects?.map(p => [p.id, { name: p.propertyName, userId: p.userId }])), [projects]);
   
-  const brandingDocRef = useMemoFirebase(() => firestore ? doc(firestore, 'companySettings', 'branding') : null, [firestore]);
-  const { data: brandingData } = useDoc<CompanySettings>(brandingDocRef);
-
+  const { data: brandingData } = useLocalBranding();
 
   const { draftInspections, approvedInspections } = React.useMemo(() => {
     if (!inspections) return { draftInspections: [], approvedInspections: [] };

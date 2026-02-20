@@ -9,6 +9,7 @@ import CrmDashboard from './crm/crm-dashboard';
 import { Leaf } from 'lucide-react';
 import { PageHeader } from '@/components/page-header';
 import BirthdayWidget from './dashboards/birthday-widget';
+import AgendaWidget from './dashboards/agenda-widget';
 import FaunaDashboard from './dashboards/fauna-dashboard';
 
 export default function DashboardRouterPage() {
@@ -35,6 +36,7 @@ export default function DashboardRouterPage() {
           <div className="flex flex-col h-full">
             <PageHeader title="Painel Financeiro" />
             <main className="flex-1 overflow-auto p-4 md:p-6 space-y-8">
+                <AgendaWidget />
                 <BirthdayWidget />
                 <FinancialDashboard />
                  <div className='mt-8'>
@@ -49,6 +51,7 @@ export default function DashboardRouterPage() {
             <div className="flex flex-col h-full">
                 <PageHeader title="Painel de Vendas" />
                 <main className="flex-1 overflow-auto p-4 md:p-6 space-y-8">
+                    <AgendaWidget />
                     <BirthdayWidget />
                     <div className='mt-8'>
                       <CrmDashboard />
@@ -70,6 +73,7 @@ export default function DashboardRouterPage() {
             <div className="flex flex-col h-full">
                 <PageHeader title="Painel de Gestão Ambiental" />
                 <main className="flex-1 overflow-auto p-4 md:p-6 space-y-8">
+                    <AgendaWidget />
                     <BirthdayWidget />
                     <div className='mt-8'>
                       <EnvironmentalDashboard />

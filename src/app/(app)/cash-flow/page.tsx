@@ -7,6 +7,8 @@ import { collection } from 'firebase/firestore';
 import type { Revenue, Expense, Client } from '@/lib/types';
 import jsPDF from 'jspdf';
 import { useToast } from '@/hooks/use-toast';
+import { fetchBrandingImageAsBase64 } from '@/lib/branding-pdf';
+import { useLocalBranding } from '@/hooks/use-local-branding';
 import { CashFlowView } from './cash-flow-view';
 
 type PeriodType = 'day' | 'month' | 'year';
@@ -34,6 +36,7 @@ export default function CashFlowPage() {
   const { toast } = useToast();
   const firestore = useFirestore();
   const { user } = useUser();
+  const { data: brandingData } = useLocalBranding();
 
   const [periodType, setPeriodType] = useState<PeriodType>('month');
   const [periodDay, setPeriodDay] = useState<string>(() => new Date().toISOString().slice(0, 10));
@@ -101,11 +104,28 @@ export default function CashFlowPage() {
   const formatCurrency = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
   const periodLabel = periodType === 'day' ? periodDay : periodType === 'month' ? periodMonth : periodYear;
 
-  const handleExportPdf = () => {
+  const handleExportPdf = async () => {
+    const headerBase64 = await fetchBrandingImageAsBase64(brandingData?.headerImageUrl);
+    const footerBase64 = await fetchBrandingImageAsBase64(brandingData?.footerImageUrl);
+    const watermarkBase64 = await fetchBrandingImageAsBase64(brandingData?.watermarkImageUrl);
+
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
     const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
     const margin = 15;
+    const contentWidth = pageWidth - margin * 2;
     let y = 20;
+    if (headerBase64) {
+      doc.addImage(headerBase64, 'PNG', margin, 10, contentWidth, 30);
+      y = 50;
+    }
+    if (watermarkBase64) {
+      const imgProps = doc.getImageProperties(watermarkBase64);
+      const aspectRatio = imgProps.width / imgProps.height;
+      const w = 100;
+      const h = w / aspectRatio;
+      doc.addImage(watermarkBase64, 'PNG', (pageWidth - w) / 2, (pageHeight - h) / 2, w, h, undefined, 'FAST');
+    }
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     doc.text('Lançamentos de Caixa por Período', pageWidth / 2, y, { align: 'center' });
@@ -145,6 +165,14 @@ export default function CashFlowPage() {
     y += 6;
     doc.setFont('helvetica', 'bold');
     doc.text('Total Despesas: ' + formatCurrency(expensesInPeriod.reduce((s, e) => s + e.amount, 0)), margin, y);
+
+    if (footerBase64) {
+      const totalPages = doc.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.addImage(footerBase64, 'PNG', 10, pageHeight - 20, pageWidth - 20, 15);
+      }
+    }
     doc.save('lancamentos_caixa_' + periodLabel.replace(/-/g, '') + '.pdf');
     toast({ title: 'PDF exportado', description: 'Relatório por período gerado.' });
   };

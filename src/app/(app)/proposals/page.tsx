@@ -27,6 +27,7 @@ import { cn } from '@/lib/utils';
 import { useCollection, useFirebase, useMemoFirebase, errorEmitter, useDoc, useAuth } from '@/firebase';
 import { collection, doc, deleteDoc, query, where, updateDoc } from 'firebase/firestore';
 import { fetchBrandingImageAsBase64 } from '@/lib/branding-pdf';
+import { useLocalBranding } from '@/hooks/use-local-branding';
 import type { Proposal, Client, CompanySettings, Contract } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -93,9 +94,7 @@ export default function ProposalsPage() {
     const contractsMap = useMemo(() => new Map(contracts?.map(c => [c.id, c])), [contracts]);
 
 
-    const brandingDocRef = useMemoFirebase(() => firestore ? doc(firestore, 'companySettings', 'branding') : null, [firestore]);
-    const { data: brandingData, isLoading: isLoadingBranding } = useDoc<CompanySettings>(brandingDocRef);
-
+    const { data: brandingData, isLoading: isLoadingBranding } = useLocalBranding();
 
     const isLoading = isLoadingProposals || isLoadingClients || isLoadingBranding || isLoadingContracts;
 
@@ -186,29 +185,21 @@ export default function ProposalsPage() {
         const footerBase64 = await fetchBrandingImageAsBase64(brandingData?.footerImageUrl);
         const watermarkBase64 = await fetchBrandingImageAsBase64(brandingData?.watermarkImageUrl);
 
-
         const pageHeight = doc.internal.pageSize.getHeight();
         const pageWidth = doc.internal.pageSize.getWidth();
         const margins = { top: 15, bottom: 25, left: 15, right: 15 };
         const contentWidth = pageWidth - margins.left - margins.right;
 
-        // Header
+        // Header: alinhado à esquerda, tamanho natural (sem esticar)
         if (headerBase64) {
-            doc.addImage(headerBase64, 'PNG', margins.left, 10, contentWidth, 30);
-        }
-        
-        // Watermark
-        if (watermarkBase64) {
-            const imgProps = doc.getImageProperties(watermarkBase64);
+            const imgProps = doc.getImageProperties(headerBase64);
             const aspectRatio = imgProps.width / imgProps.height;
-            const watermarkWidth = 100;
-            const watermarkHeight = watermarkWidth / aspectRatio;
-            const x = (pageWidth - watermarkWidth) / 2;
-            const y = (pageHeight - watermarkHeight) / 2;
-            doc.addImage(watermarkBase64, 'PNG', x, y, watermarkWidth, watermarkHeight, undefined, 'FAST');
+            const headerHeight = 25; // altura fixa em mm; largura proporcional
+            const headerWidth = headerHeight * aspectRatio;
+            doc.addImage(headerBase64, 'PNG', margins.left, 10, headerWidth, headerHeight, undefined, 'FAST');
         }
-        
-        let yPos = headerBase64 ? 50 : 22;
+
+        let yPos = headerBase64 ? 45 : 22;
 
         doc.setFontSize(18);
         doc.setFont('helvetica', 'bold');
@@ -273,8 +264,21 @@ export default function ProposalsPage() {
             doc.textWithLink('Ver Anexo', 14, yPos, { url: proposal.fileUrl });
         }
 
+        // Marca d'água e rodapé em todas as páginas
+        const totalPages = doc.getNumberOfPages();
+        if (watermarkBase64) {
+            const imgProps = doc.getImageProperties(watermarkBase64);
+            const aspectRatio = imgProps.width / imgProps.height;
+            const watermarkWidth = 100;
+            const watermarkHeight = watermarkWidth / aspectRatio;
+            const wX = (pageWidth - watermarkWidth) / 2;
+            const wY = (pageHeight - watermarkHeight) / 2;
+            for (let i = 1; i <= totalPages; i++) {
+                doc.setPage(i);
+                doc.addImage(watermarkBase64, 'PNG', wX, wY, watermarkWidth, watermarkHeight, undefined, 'FAST');
+            }
+        }
         if (footerBase64) {
-            const totalPages = doc.getNumberOfPages();
             for (let i = 1; i <= totalPages; i++) {
                 doc.setPage(i);
                 doc.addImage(footerBase64, 'PNG', 10, pageHeight - 20, pageWidth - 20, 15);

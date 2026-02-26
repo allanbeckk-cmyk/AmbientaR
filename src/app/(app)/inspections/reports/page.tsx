@@ -131,60 +131,137 @@ export default function InspectionReportsListPage() {
   const handleGeneratePdf = async (report: Inspection) => {
     toast({ title: "Gerando PDF...", description: "Por favor, aguarde." });
 
-    const doc = new jsPDF();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const pageWidth = doc.internal.pageSize.getWidth();
+    const pdfDoc = new jsPDF();
+    const pageHeight = pdfDoc.internal.pageSize.getHeight();
+    const pageWidth = pdfDoc.internal.pageSize.getWidth();
     let yPos = 15;
 
     const headerBase64 = await fetchBrandingImageAsBase64(brandingData?.headerImageUrl);
     const footerBase64 = await fetchBrandingImageAsBase64(brandingData?.footerImageUrl);
-    
+    const watermarkBase64 = await fetchBrandingImageAsBase64(brandingData?.watermarkImageUrl);
+
+    const criticalityColors: Record<string, [number, number, number]> = {
+        'Baixa': [34, 139, 34],
+        'Média': [234, 179, 8],
+        'Alta': [249, 115, 22],
+        'Urgente': [220, 38, 38],
+    };
+
+    const addBrandingToPage = () => {
+        if (watermarkBase64) {
+            const wmSize = 80;
+            try {
+                pdfDoc.saveGraphicsState();
+                (pdfDoc as any).setGState(new (pdfDoc as any).GState({ opacity: 0.06 }));
+                pdfDoc.addImage(watermarkBase64, 'PNG', (pageWidth - wmSize) / 2, (pageHeight - wmSize) / 2, wmSize, wmSize);
+                pdfDoc.restoreGraphicsState();
+            } catch(e) { /* fallback sem marca d'água */ }
+        }
+    };
+
+    addBrandingToPage();
+
     if (headerBase64) {
-        doc.addImage(headerBase64, 'PNG', 10, 10, pageWidth - 20, 25);
+        pdfDoc.addImage(headerBase64, 'PNG', 10, 10, pageWidth - 20, 25);
         yPos = 40;
     }
 
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Relatório de Vistoria de Campo', pageWidth / 2, yPos, { align: 'center' });
+    pdfDoc.setFontSize(16);
+    pdfDoc.setFont('helvetica', 'bold');
+    pdfDoc.text('Relatório de Vistoria de Campo', pageWidth / 2, yPos, { align: 'center' });
     yPos += 15;
 
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Empreendimento: ${projectsMap.get(report.projectId) || 'N/A'}`, 15, yPos);
+    pdfDoc.setFontSize(10);
+    pdfDoc.setFont('helvetica', 'normal');
+    pdfDoc.text(`Empreendimento: ${projectsMap.get(report.projectId) || 'N/A'}`, 15, yPos);
     yPos += 6;
-    doc.text(`Empreendedor: ${empreendedoresMap.get(report.empreendedorId) || 'N/A'}`, 15, yPos);
+    pdfDoc.text(`Empreendedor: ${empreendedoresMap.get(report.empreendedorId) || 'N/A'}`, 15, yPos);
     yPos += 6;
-    doc.text(`Data da Vistoria: ${new Date(report.inspectionDate).toLocaleDateString('pt-BR')}`, 15, yPos);
+    pdfDoc.text(`Data da Vistoria: ${new Date(report.inspectionDate).toLocaleDateString('pt-BR')}`, 15, yPos);
     yPos += 6;
-    doc.text(`Responsável: ${report.inspectorName}`, 15, yPos);
+    pdfDoc.text(`Responsável: ${report.inspectorName}`, 15, yPos);
     yPos += 12;
 
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Inconformidades e Observações', 15, yPos);
+    pdfDoc.setFontSize(12);
+    pdfDoc.setFont('helvetica', 'bold');
+    pdfDoc.text('Inconformidades e Observações', 15, yPos);
     yPos += 6;
 
     const tableData = report.inconformidades.map(item => [item.description, item.criticality]);
 
-    autoTable(doc, {
+    autoTable(pdfDoc, {
         startY: yPos,
         head: [['Descrição', 'Criticidade']],
         body: tableData,
         theme: 'striped',
         headStyles: { fillColor: [34, 139, 34] },
+        bodyStyles: { fontSize: 9 },
+        columnStyles: { 1: { cellWidth: 30, halign: 'center' } },
+        didParseCell: (data) => {
+            if (data.section === 'body' && data.column.index === 1) {
+                const level = data.cell.raw as string;
+                const color = criticalityColors[level];
+                if (color) {
+                    data.cell.styles.textColor = [255, 255, 255];
+                    data.cell.styles.fillColor = color;
+                    data.cell.styles.fontStyle = 'bold';
+                }
+            }
+        },
+        didDrawPage: () => { addBrandingToPage(); },
     });
-    
-    if (footerBase64) {
-        const totalPages = doc.getNumberOfPages();
-        for (let i = 1; i <= totalPages; i++) {
-            doc.setPage(i);
-            doc.addImage(footerBase64, 'PNG', 10, pageHeight - 25, pageWidth - 20, 15);
+
+    yPos = (pdfDoc as any).lastAutoTable.finalY + 10;
+
+    for (let i = 0; i < report.inconformidades.length; i++) {
+        const item = report.inconformidades[i];
+        if (!item.imageUrls || item.imageUrls.length === 0) continue;
+
+        if (yPos > pageHeight - 80) {
+            pdfDoc.addPage();
+            addBrandingToPage();
+            yPos = 15;
         }
+
+        pdfDoc.setFontSize(10);
+        pdfDoc.setFont('helvetica', 'bold');
+        const color = criticalityColors[item.criticality] || [0, 0, 0];
+        pdfDoc.setTextColor(color[0], color[1], color[2]);
+        pdfDoc.text(`Fotos - Inconformidade #${i + 1} (${item.criticality})`, 15, yPos);
+        pdfDoc.setTextColor(0, 0, 0);
+        yPos += 6;
+
+        for (const url of item.imageUrls) {
+            try {
+                const imgBase64 = await fetchBrandingImageAsBase64(url);
+                if (imgBase64) {
+                    if (yPos > pageHeight - 75) {
+                        pdfDoc.addPage();
+                        addBrandingToPage();
+                        yPos = 15;
+                    }
+                    pdfDoc.addImage(imgBase64, 'JPEG', 15, yPos, 60, 45);
+                    yPos += 50;
+                }
+            } catch(e) { console.error("Erro ao adicionar foto ao PDF", e); }
+        }
+        yPos += 5;
+    }
+
+    const totalPages = pdfDoc.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+        pdfDoc.setPage(i);
+        if (footerBase64) {
+            pdfDoc.addImage(footerBase64, 'PNG', 10, pageHeight - 25, pageWidth - 20, 15);
+        }
+        pdfDoc.setFontSize(7);
+        pdfDoc.setTextColor(150);
+        pdfDoc.text(`Página ${i} de ${totalPages}`, pageWidth - 15, pageHeight - 5, { align: 'right' });
+        pdfDoc.setTextColor(0);
     }
     
     const fileName = `Relatorio_Vistoria_${(projectsMap.get(report.projectId) || 'desconhecido').replace(/\s+/g, '_')}.pdf`;
-    doc.save(fileName);
+    pdfDoc.save(fileName);
   }
 
   return (

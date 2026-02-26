@@ -21,9 +21,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, PlusCircle, Paperclip, Eye, Pencil, Trash2 } from 'lucide-react';
+import { PlusCircle, Download, ClipboardCheck, Eye, Pencil, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useCollection, useFirestore, useUser, useMemoFirebase, errorEmitter } from '@/firebase';
+import { useCollection, useFirebase, useMemoFirebase, errorEmitter } from '@/firebase';
 import { collection, doc, deleteDoc, query, where, getDocs } from 'firebase/firestore';
 import type { EnvironmentalIntervention, Empreendedor, AppUser, Project } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -49,6 +49,7 @@ import { useToast } from '@/hooks/use-toast';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { useAuth } from '@/firebase';
 import { useRouter } from 'next/navigation';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const canPerformWriteActions = (user: AppUser | null): boolean => {
     if (!user) return false;
@@ -62,7 +63,8 @@ export default function IntervencoesPage() {
   const [editingItem, setEditingItem] = useState<EnvironmentalIntervention | null>(null);
   const [empreendedorIdsForUser, setEmpreendedorIdsForUser] = useState<string[] | undefined>(undefined);
 
-  const { firestore, user } = useAuth();
+  const { firestore } = useFirebase();
+  const { user } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
   
@@ -187,20 +189,17 @@ export default function IntervencoesPage() {
               <CardDescription>Acompanhe todas as autorizações para intervenção ambiental.</CardDescription>
             </CardHeader>
             <CardContent>
+             <TooltipProvider>
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Empreendedor</TableHead>
                     <TableHead className="hidden md:table-cell">Nº do Processo</TableHead>
                     <TableHead className="hidden lg:table-cell">Tipo de Intervenção</TableHead>
+                    <TableHead className="hidden lg:table-cell">Emissão</TableHead>
                     <TableHead className="hidden lg:table-cell">Vencimento</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Anexo</TableHead>
-                    {canPerformWriteActions(user) && (
-                        <TableHead>
-                            <span className="sr-only">Ações</span>
-                        </TableHead>
-                    )}
+                    <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -211,65 +210,83 @@ export default function IntervencoesPage() {
                         <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-24" /></TableCell>
                         <TableCell className="hidden lg:table-cell"><Skeleton className="h-5 w-32" /></TableCell>
                         <TableCell className="hidden lg:table-cell"><Skeleton className="h-5 w-24" /></TableCell>
+                        <TableCell className="hidden lg:table-cell"><Skeleton className="h-5 w-24" /></TableCell>
                         <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
-                        <TableCell><Skeleton className="h-6 w-6" /></TableCell>
-                        <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+                        <TableCell className="text-right"><Skeleton className="h-8 w-24" /></TableCell>
                       </TableRow>
                     ))}
                   {!isLoading && intervencoes?.map((item) => (
                     <TableRow key={item.id}>
-                      <TableCell className="font-medium">{empreendedoresMap.get(item.empreendedorId) || 'Empreendedor não encontrado'}</TableCell>
+                      <TableCell className="font-medium">{empreendedoresMap.get(item.empreendedorId) || 'Não encontrado'}</TableCell>
                       <TableCell className="hidden md:table-cell text-muted-foreground">{item.processNumber}</TableCell>
                       <TableCell className="hidden lg:table-cell text-muted-foreground">{item.description}</TableCell>
+                      <TableCell className="hidden lg:table-cell text-muted-foreground">{formatDate(item.issueDate)}</TableCell>
                       <TableCell className="hidden lg:table-cell text-muted-foreground">{formatDate(item.expirationDate)}</TableCell>
                       <TableCell>
                         <Badge variant={'outline'} className={cn(getStatusVariant(item.status))}>
                           {item.status}
                         </Badge>
                       </TableCell>
-                       <TableCell>
-                        {item.fileUrl && (
-                          <Button asChild variant="ghost" size="icon">
-                            <a href={item.fileUrl} target="_blank" rel="noopener noreferrer">
-                              <Paperclip className="h-4 w-4" />
-                            </a>
-                          </Button>
-                        )}
+                      <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    {item.fileUrl ? (
+                                        <Button asChild variant="ghost" size="icon">
+                                            <a href={item.fileUrl} target="_blank" rel="noopener noreferrer">
+                                                <Download className="h-4 w-4" />
+                                            </a>
+                                        </Button>
+                                    ) : (
+                                        <Button variant="ghost" size="icon" disabled>
+                                            <Download className="h-4 w-4" />
+                                        </Button>
+                                    )}
+                                </TooltipTrigger>
+                                <TooltipContent><p>{item.fileUrl ? 'Baixar certificado da DAIA' : 'Nenhum certificado anexado'}</p></TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" onClick={() => router.push(`/compliance?intervencaoId=${item.id}`)}>
+                                  <ClipboardCheck className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent><p>Ver condicionantes</p></TooltipContent>
+                            </Tooltip>
+                            {canPerformWriteActions(user) && (
+                              <>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon" onClick={() => handleEdit(item)}>
+                                      <Pencil className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent><p>Editar DAIA</p></TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => openDeleteConfirm(item.id)}>
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent><p>Deletar DAIA</p></TooltipContent>
+                                </Tooltip>
+                              </>
+                            )}
+                          </div>
                       </TableCell>
-                      {canPerformWriteActions(user) && (
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button aria-haspopup="true" size="icon" variant="ghost">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                              <DropdownMenuItem onClick={() => handleEdit(item)}>Editar</DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                className="text-destructive"
-                                onClick={() => openDeleteConfirm(item.id)}
-                              >
-                                Deletar
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      )}
                     </TableRow>
                   ))}
                    {!isLoading && intervencoes?.length === 0 && (
                         <TableRow>
-                            <TableCell colSpan={7} className="h-24 text-center">
+                            <TableCell colSpan={8} className="h-24 text-center">
                                 Nenhuma intervenção encontrada.
                             </TableCell>
                         </TableRow>
                     )}
                 </TableBody>
               </Table>
+             </TooltipProvider>
             </CardContent>
           </Card>
         </main>

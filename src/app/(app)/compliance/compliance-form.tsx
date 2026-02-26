@@ -38,7 +38,7 @@ import { DialogFooter, DialogHeader, DialogTitle, DialogDescription } from '@/co
 
 const formSchema = z.object({
   referenceId: z.string().min(1, 'Selecione um documento de referência.'),
-  referenceType: z.enum(['licenca', 'outorga', 'intervencao']),
+  referenceType: z.enum(['licenca', 'outorga', 'intervencao', 'uso_insignificante']),
   description: z.string().min(1, 'A descrição da condicionante é obrigatória.'),
   dueDate: z.date({ required_error: 'A data de vencimento é obrigatória.' }),
   status: z.enum(['Pendente', 'Em Execução', 'Cumprida', 'Atrasada', 'Não Aplicável'], { required_error: 'Selecione o status.'}),
@@ -129,6 +129,7 @@ export function ComplianceForm({ currentItem, referenceType, onSuccess }: Compli
         case 'licenca': return 'Licença de Referência';
         case 'outorga': return 'Outorga de Referência';
         case 'intervencao': return 'Intervenção de Referência';
+        case 'uso_insignificante': return 'Uso Insignificante de Referência';
         default: return 'Documento de Referência';
     }
   }

@@ -122,27 +122,22 @@ export default function FaunaManagementPage() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
-                            {study.fileUrl ? (
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    {study.fileUrl ? (
                                         <Button asChild variant="ghost" size="icon">
                                             <a href={study.fileUrl} target="_blank" rel="noopener noreferrer">
-                                            <Paperclip className="h-4 w-4" />
+                                                <Download className="h-4 w-4" />
                                             </a>
                                         </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent><p>Ver anexo</p></TooltipContent>
-                                </Tooltip>
-                            ) : (
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" onClick={() => handleExport('pdf')}>
-                                        <FileText className="h-4 w-4" />
-                                    </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent><p>Gerar PDF</p></TooltipContent>
-                                </Tooltip>
-                            )}
+                                    ) : (
+                                        <Button variant="ghost" size="icon" disabled>
+                                            <Download className="h-4 w-4" />
+                                        </Button>
+                                    )}
+                                </TooltipTrigger>
+                                <TooltipContent><p>{study.fileUrl ? 'Baixar documento' : 'Nenhum documento anexado'}</p></TooltipContent>
+                            </Tooltip>
                           </div>
                         </TableCell>
                       </TableRow>

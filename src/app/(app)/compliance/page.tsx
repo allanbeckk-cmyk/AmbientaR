@@ -21,7 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, PlusCircle, ChevronDown, FolderOpen, Droplets, FileCheck2, Trees } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, ChevronDown, FolderOpen, Droplets, FileCheck2, Trees, Waves } from 'lucide-react';
 import { useCollection, useFirebase, useMemoFirebase, errorEmitter, useAuth } from '@/firebase';
 import { collection, doc, deleteDoc, query, where, getDocs } from 'firebase/firestore';
 import type { Condicionante, Project, License, WaterPermit, EnvironmentalIntervention, AppUser, Empreendedor } from '@/lib/types';
@@ -62,6 +62,7 @@ export default function CompliancePage() {
   const searchParams = useSearchParams();
   const highlightLicenseId = searchParams.get('licenseId');
   const highlightOutorgaId = searchParams.get('outorgaId');
+  const highlightIntervencaoId = searchParams.get('intervencaoId');
 
   const { firestore } = useFirebase();
   const { user } = useAuth();
@@ -145,12 +146,13 @@ export default function CompliancePage() {
   
   const isLoading = isLoadingCondicionantes || isLoadingProjects || isLoadingLicenses || isLoadingOutorgas || isLoadingIntervencoes || (user?.role === 'client' && empreendedorIdsForUser === undefined);
   
-  const { licencaGroups, outorgaGroups, intervencaoGroups } = useMemo(() => {
-    if (!condicionantes) return { licencaGroups: new Map(), outorgaGroups: new Map(), intervencaoGroups: new Map() };
+  const { licencaGroups, outorgaGroups, intervencaoGroups, usoInsignificanteGroups } = useMemo(() => {
+    if (!condicionantes) return { licencaGroups: new Map(), outorgaGroups: new Map(), intervencaoGroups: new Map(), usoInsignificanteGroups: new Map() };
     
     const licencaGroups = new Map<string, Condicionante[]>();
     const outorgaGroups = new Map<string, Condicionante[]>();
     const intervencaoGroups = new Map<string, Condicionante[]>();
+    const usoInsignificanteGroups = new Map<string, Condicionante[]>();
 
     condicionantes.forEach(item => {
       if (item.referenceType === 'licenca') {
@@ -165,10 +167,14 @@ export default function CompliancePage() {
         const group = intervencaoGroups.get(item.referenceId) || [];
         group.push(item);
         intervencaoGroups.set(item.referenceId, group);
+      } else if (item.referenceType === 'uso_insignificante') {
+        const group = usoInsignificanteGroups.get(item.referenceId) || [];
+        group.push(item);
+        usoInsignificanteGroups.set(item.referenceId, group);
       }
     });
 
-    return { licencaGroups, outorgaGroups, intervencaoGroups };
+    return { licencaGroups, outorgaGroups, intervencaoGroups, usoInsignificanteGroups };
 
   }, [condicionantes]);
 
@@ -394,7 +400,7 @@ export default function CompliancePage() {
         </CardHeader>
         <CardContent>
             {isLoading ? <Skeleton className="h-40 w-full"/> : (
-                <Accordion type="single" collapsible className="w-full">
+                <Accordion type="single" collapsible className="w-full" defaultValue={highlightIntervencaoId || undefined}>
                         {Array.from(intervencaoGroups.entries()).map(([intervencaoId, items]) => {
                         const intervencao = intervencoesMap.get(intervencaoId);
                         return (
@@ -414,6 +420,41 @@ export default function CompliancePage() {
                     {intervencaoGroups.size === 0 && (
                         <div className="h-24 text-center flex items-center justify-center border-2 border-dashed rounded-md">
                             <p className="text-muted-foreground">Nenhuma condicionante de intervenção encontrada.</p>
+                        </div>
+                    )}
+                </Accordion>
+            )}
+        </CardContent>
+        </Card>
+        <Card>
+        <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+            <Waves className="w-5 h-5" />
+            Condicionantes de Usos Insignificantes
+            </CardTitle>
+            <CardDescription>Condicionantes vinculadas a usos insignificantes de recursos hídricos.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            {isLoading ? <Skeleton className="h-40 w-full"/> : (
+                <Accordion type="single" collapsible className="w-full">
+                        {Array.from(usoInsignificanteGroups.entries()).map(([refId, items]) => {
+                        return (
+                            <AccordionItem value={refId} key={refId}>
+                                <AccordionTrigger>
+                                    <div className="flex flex-col items-start text-left">
+                                        <span className="font-semibold">Uso Insignificante</span>
+                                        <span className="text-xs text-muted-foreground">{refId}</span>
+                                    </div>
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                    {renderConditionantesTable(items)}
+                                </AccordionContent>
+                            </AccordionItem>
+                        )
+                    })}
+                    {usoInsignificanteGroups.size === 0 && (
+                        <div className="h-24 text-center flex items-center justify-center border-2 border-dashed rounded-md">
+                            <p className="text-muted-foreground">Nenhuma condicionante de uso insignificante encontrada.</p>
                         </div>
                     )}
                 </Accordion>
@@ -448,6 +489,9 @@ export default function CompliancePage() {
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleAddNew('intervencao')}>
                             Intervenção Ambiental
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleAddNew('uso_insignificante')}>
+                            Uso Insignificante
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

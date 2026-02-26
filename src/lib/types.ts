@@ -464,7 +464,7 @@ export type EnvironmentalIntervention = {
 export type Condicionante = {
     id: string;
     referenceId: string;
-    referenceType: 'licenca' | 'outorga' | 'intervencao';
+    referenceType: 'licenca' | 'outorga' | 'intervencao' | 'uso_insignificante';
     description: string;
     dueDate: string;
     status: 'Pendente' | 'Em Execução' | 'Cumprida' | 'Atrasada' | 'Não Aplicável';

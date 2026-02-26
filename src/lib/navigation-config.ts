@@ -106,7 +106,7 @@ export const allNavItems: NavItem[] = [
       { href: '/intervencoes', label: "DAIA's", icon: Trees, roles: ['admin', 'client', 'gestor', 'supervisor', 'technical'] },
       { href: '/compliance', label: 'Condicionantes', icon: ClipboardCheck, roles: ['admin', 'client', 'gestor', 'supervisor', 'technical'] },
       {
-        label: 'Monitoramento de Outorga',
+        label: 'Monitoramento Usos Hídricos/Outorgas',
         icon: BookMarked,
         roles: ['admin', 'client', 'gestor', 'supervisor', 'technical'],
         subItems: [

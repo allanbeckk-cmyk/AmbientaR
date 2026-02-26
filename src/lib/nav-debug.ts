@@ -14,7 +14,7 @@ export type NavDebugInfo = {
   pathname: string;
   /** Menu principal da barra lateral (ex: "Financeiro", "Cadastro") */
   menuPrincipal: string | null;
-  /** Caminho de labels do menu até o item atual (ex: ["Financeiro", "Faturas"] ou ["Gestão Ambiental", "Monitoramento de Outorga", "Monitoramento Manual"]) */
+  /** Caminho de labels do menu até o item atual (ex: ["Financeiro", "Faturas"] ou ["Gestão Ambiental", "Monitoramento Usos Hídricos/Outorgas", "Monitoramento Manual"]) */
   breadcrumb: string[];
   /** Item de nível mais profundo que corresponde à rota (label + href) */
   submenuAtual: { label: string; href?: string } | null;

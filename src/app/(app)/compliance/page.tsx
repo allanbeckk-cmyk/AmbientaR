@@ -1,6 +1,7 @@
 
 'use client';
 import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -57,6 +58,9 @@ export default function CompliancePage() {
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<Condicionante | null>(null);
   const [selectedType, setSelectedType] = useState<'licenca' | 'outorga' | 'intervencao'>('licenca');
+
+  const searchParams = useSearchParams();
+  const highlightLicenseId = searchParams.get('licenseId');
 
   const { firestore } = useFirebase();
   const { user } = useAuth();
@@ -307,7 +311,7 @@ export default function CompliancePage() {
         </CardHeader>
         <CardContent>
             {isLoading ? <Skeleton className="h-40 w-full"/> : (
-                <Accordion type="single" collapsible className="w-full">
+                <Accordion type="single" collapsible className="w-full" defaultValue={highlightLicenseId || undefined}>
                     {Array.from(licencaGroups.entries()).map(([licenseId, items]) => {
                         const license = licensesMap.get(licenseId);
                         const project = license ? projectsMap.get(license.projectId) : null;

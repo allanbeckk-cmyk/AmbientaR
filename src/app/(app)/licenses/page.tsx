@@ -21,7 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, PlusCircle, Paperclip, Eye, Pencil, Trash2 } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Paperclip, Eye, Pencil, Trash2, ClipboardCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCollection, useFirestore, useMemoFirebase, errorEmitter } from '@/firebase';
 import { collection, doc, deleteDoc, query, where, getDocs } from 'firebase/firestore';
@@ -265,6 +265,15 @@ export default function LicensesPage() {
                                     <TooltipContent><p>Baixar documento</p></TooltipContent>
                                 </Tooltip>
                             )}
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" onClick={() => router.push(`/compliance?licenseId=${license.id}`)}>
+                                  <ClipboardCheck className="h-4 w-4" />
+                                  <span className="sr-only">Ver condicionantes</span>
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent><p>Ver condicionantes</p></TooltipContent>
+                            </Tooltip>
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button variant="ghost" size="icon" onClick={() => handleView(license)}>

@@ -31,6 +31,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, CalendarIcon, PlusCircle, Trash2, Camera, ImagePlus, X } from 'lucide-react';
+import { parse } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -230,25 +231,72 @@ export function InspectionForm({ onSuccess }: InspectionFormProps) {
             <FormField
             control={form.control}
             name="inspectionDate"
-            render={({ field }) => (
-                <FormItem className="flex flex-col">
-                <FormLabel>Data da Vistoria</FormLabel>
-                <Popover>
-                    <PopoverTrigger asChild>
-                    <FormControl>
-                        <Button variant={"outline"} className={cn("h-12 text-base pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
-                        {field.value ? format(field.value, "PPP", { locale: ptBR }) : <span>Escolha uma data</span>}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                    </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date()} initialFocus />
-                    </PopoverContent>
-                </Popover>
-                <FormMessage />
-                </FormItem>
-            )}
+            render={({ field }) => {
+                const [dateInputValue, setDateInputValue] = React.useState(
+                    field.value ? format(field.value, 'dd/MM/yyyy') : format(new Date(), 'dd/MM/yyyy')
+                );
+
+                React.useEffect(() => {
+                    if (field.value && field.value instanceof Date && !isNaN(field.value.getTime())) {
+                        setDateInputValue(format(field.value, 'dd/MM/yyyy'));
+                    }
+                }, [field.value]);
+
+                React.useEffect(() => {
+                    if (!field.value) {
+                        const today = new Date();
+                        field.onChange(today);
+                        setDateInputValue(format(today, 'dd/MM/yyyy'));
+                    }
+                }, []);
+
+                const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                    let value = e.target.value.replace(/\D/g, '');
+                    if (value.length > 2) value = `${value.slice(0, 2)}/${value.slice(2)}`;
+                    if (value.length > 5) value = `${value.slice(0, 5)}/${value.slice(5)}`;
+                    if (value.length > 10) value = value.slice(0, 10);
+                    setDateInputValue(value);
+
+                    if (value.length === 10) {
+                        const parsedDate = parse(value, 'dd/MM/yyyy', new Date());
+                        if (!isNaN(parsedDate.getTime()) && parsedDate <= new Date()) {
+                            field.onChange(parsedDate);
+                        }
+                    }
+                };
+
+                return (
+                    <FormItem className="flex flex-col">
+                    <FormLabel>Data da Vistoria</FormLabel>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                        <div className="relative">
+                            <FormControl>
+                                <Input
+                                    placeholder="DD/MM/AAAA"
+                                    value={dateInputValue}
+                                    onChange={handleDateInputChange}
+                                    className="h-12 text-base pr-10"
+                                    inputMode="numeric"
+                                />
+                            </FormControl>
+                            <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50" />
+                        </div>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={(date) => { if (date) field.onChange(date); }}
+                                disabled={(date) => date > new Date()}
+                                initialFocus
+                            />
+                        </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                    </FormItem>
+                );
+            }}
             />
 
             <div className="space-y-4 rounded-lg border p-4">

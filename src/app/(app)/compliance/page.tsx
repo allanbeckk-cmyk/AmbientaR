@@ -58,7 +58,8 @@ export default function CompliancePage() {
   const [editingItem, setEditingItem] = useState<Condicionante | null>(null);
   const [selectedType, setSelectedType] = useState<'licenca' | 'outorga' | 'intervencao'>('licenca');
 
-  const { firestore, user } = useAuth();
+  const { firestore } = useFirebase();
+  const { user } = useAuth();
   const { toast } = useToast();
   
   const [empreendedorIdsForUser, setEmpreendedorIdsForUser] = useState<string[] | undefined>(undefined);

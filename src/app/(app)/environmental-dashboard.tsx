@@ -15,7 +15,7 @@ import { AlertTriangle, CheckCircle2, Clock, FolderKanban, ClipboardCheck, Dropl
 import { cn } from '@/lib/utils';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import type { Project as EnvironmentalPermit, Condicionante, WaterPermit, EnvironmentalIntervention, Project, Empreendedor } from '@/lib/types';
+import type { Project as EnvironmentalPermit, Condicionante, License, WaterPermit, EnvironmentalIntervention, Project, Empreendedor } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -74,6 +74,10 @@ export default function EnvironmentalDashboard({ initialPermits, initialCondicio
   const projectsQuery = useMemoFirebase(() => firestore ? collection(firestore, 'projects') : null, [firestore]);
   const { data: allProjects, isLoading: isLoadingProjects } = useCollection<Project>(projectsQuery);
   const projectsMap = useMemo(() => new Map(allProjects?.map(p => [p.id, p.propertyName])), [allProjects]);
+
+  const licensesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'licenses') : null, [firestore]);
+  const { data: allLicenses, isLoading: isLoadingLicenses } = useCollection<License>(licensesQuery);
+  const licensesMap = useMemo(() => new Map(allLicenses?.map(l => [l.id, `${l.permitNumber} - ${l.permitType}`])), [allLicenses]);
 
   const empreendedoresQuery = useMemoFirebase(() => firestore ? collection(firestore, 'empreendedores') : null, [firestore]);
   const { data: allEmpreendedores, isLoading: isLoadingEmpreendedores } = useCollection<Empreendedor>(empreendedoresQuery);
@@ -201,7 +205,7 @@ export default function EnvironmentalDashboard({ initialPermits, initialCondicio
     return new Date(dateString).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
   };
   
-  const isLoading = initialIsLoading === undefined ? (isLoadingPermits || isLoadingCondicionantes || isLoadingOutorgas || isLoadingIntervencoes || isLoadingProjects || isLoadingEmpreendedores) : initialIsLoading;
+  const isLoading = initialIsLoading === undefined ? (isLoadingPermits || isLoadingCondicionantes || isLoadingOutorgas || isLoadingIntervencoes || isLoadingProjects || isLoadingLicenses || isLoadingEmpreendedores) : initialIsLoading;
 
   return (
     <>
@@ -420,7 +424,7 @@ export default function EnvironmentalDashboard({ initialPermits, initialCondicio
                         dialogCondicionantes.map((item) => (
                         <TableRow key={item.id}>
                             <TableCell className="max-w-xs truncate">{item.description}</TableCell>
-                            <TableCell>{projectsMap.get(item.referenceId) || 'N/A'}</TableCell>
+                            <TableCell>{item.referenceType === 'licenca' ? (licensesMap.get(item.referenceId) || 'N/A') : (projectsMap.get(item.referenceId) || 'N/A')}</TableCell>
                             <TableCell>
                                 <Badge variant={'outline'} className={cn(getStatusVariant(item.status))}>
                                     {item.status}

@@ -30,7 +30,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
-import type { Condicionante, PermitStatus, Project, WaterPermit, EnvironmentalIntervention } from '@/lib/types';
+import type { Condicionante, PermitStatus, Project, License, WaterPermit, EnvironmentalIntervention } from '@/lib/types';
 import { useFirebase, errorEmitter, useCollection, useMemoFirebase } from '@/firebase';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { collection, doc, addDoc, updateDoc } from 'firebase/firestore';
@@ -73,8 +73,12 @@ export function ComplianceForm({ currentItem, referenceType, onSuccess }: Compli
   const { toast } = useToast();
   const { firestore } = useFirebase();
   
+  const licensesQuery = useMemoFirebase(() => firestore && referenceType === 'licenca' ? collection(firestore, 'licenses') : null, [firestore, referenceType]);
+  const { data: licenses, isLoading: isLoadingLicenses } = useCollection<License>(licensesQuery);
+
   const projectsQuery = useMemoFirebase(() => firestore && referenceType === 'licenca' ? collection(firestore, 'projects') : null, [firestore, referenceType]);
-  const { data: projects, isLoading: isLoadingProjects } = useCollection<Project>(projectsQuery);
+  const { data: projects } = useCollection<Project>(projectsQuery);
+  const projectsMap = React.useMemo(() => new Map(projects?.map(p => [p.id, p.propertyName])), [projects]);
 
   const outorgasQuery = useMemoFirebase(() => firestore && referenceType === 'outorga' ? collection(firestore, 'outorgas') : null, [firestore, referenceType]);
   const { data: outorgas, isLoading: isLoadingOutorgas } = useCollection<WaterPermit>(outorgasQuery);
@@ -103,7 +107,10 @@ export function ComplianceForm({ currentItem, referenceType, onSuccess }: Compli
 
   const referenceItems = React.useMemo(() => {
     if (referenceType === 'licenca') {
-      return projects?.map(p => ({ id: p.id, name: `${p.processNumber} - ${p.propertyName}` })) || [];
+      return licenses?.map(l => ({
+        id: l.id,
+        name: `${l.permitNumber} - ${l.permitType} (${projectsMap.get(l.projectId) || 'Empreendimento'})`
+      })) || [];
     }
     if (referenceType === 'outorga') {
       return outorgas?.map(o => ({ id: o.id, name: `${o.permitNumber} - ${o.description}` })) || [];
@@ -112,9 +119,9 @@ export function ComplianceForm({ currentItem, referenceType, onSuccess }: Compli
         return intervencoes?.map(i => ({ id: i.id, name: `${i.processNumber} - ${i.description}` })) || [];
     }
     return [];
-  }, [referenceType, projects, outorgas, intervencoes]);
+  }, [referenceType, licenses, projectsMap, outorgas, intervencoes]);
   
-  const isLoadingReference = isLoadingProjects || isLoadingOutorgas || isLoadingIntervencoes;
+  const isLoadingReference = isLoadingLicenses || isLoadingOutorgas || isLoadingIntervencoes;
 
   const getReferenceLabel = () => {
     switch (referenceType) {

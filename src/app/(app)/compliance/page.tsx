@@ -23,7 +23,7 @@ import {
 import { MoreHorizontal, PlusCircle, ChevronDown, FolderOpen, Droplets, FileCheck2, Trees } from 'lucide-react';
 import { useCollection, useFirebase, useMemoFirebase, errorEmitter, useAuth } from '@/firebase';
 import { collection, doc, deleteDoc, query, where, getDocs } from 'firebase/firestore';
-import type { Condicionante, Project, WaterPermit, EnvironmentalIntervention, AppUser, Empreendedor } from '@/lib/types';
+import type { Condicionante, Project, License, WaterPermit, EnvironmentalIntervention, AppUser, Empreendedor } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Dialog,
@@ -97,21 +97,34 @@ export default function CompliancePage() {
 
   const projectIds = useMemo(() => projects?.map(p => p.id) || [], [projects]);
 
+  const licenseIds = useMemo(() => {
+    if (!licenses || !projects) return [];
+    const userProjectIdSet = new Set(projectIds);
+    return licenses.filter(l => userProjectIdSet.has(l.projectId)).map(l => l.id);
+  }, [licenses, projects, projectIds]);
+
+  const clientReferenceIds = useMemo(() => {
+    const ids = [...projectIds, ...licenseIds];
+    return ids.length > 0 ? ids : ['invalid-placeholder'];
+  }, [projectIds, licenseIds]);
+
   const condicionantesQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
-    if (user.role === 'client' && projectIds.length === 0) {
-       // Do not query if the client has no projects, to avoid permission errors.
-       if(empreendedorIdsForUser && empreendedorIdsForUser.length > 0) return null;
-       // If no empreendedorIds loaded yet, also don't query.
+    if (user.role === 'client') {
        if(empreendedorIdsForUser === undefined) return null;
-    }
-    if (user.role === 'client' && projectIds.length > 0) {
-      return query(collection(firestore, 'condicionantes'), where('referenceId', 'in', projectIds));
+       if(empreendedorIdsForUser.length > 0 && clientReferenceIds.length === 0) return null;
+       if(clientReferenceIds.length > 0 && clientReferenceIds[0] !== 'invalid-placeholder') {
+         return query(collection(firestore, 'condicionantes'), where('referenceId', 'in', clientReferenceIds));
+       }
+       return null;
     }
     return collection(firestore, 'condicionantes');
-  }, [firestore, user, projectIds, empreendedorIdsForUser]);
+  }, [firestore, user, clientReferenceIds, empreendedorIdsForUser]);
 
   const { data: condicionantes, isLoading: isLoadingCondicionantes } = useCollection<Condicionante>(condicionantesQuery);
+
+  const licensesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'licenses') : null, [firestore]);
+  const { data: licenses, isLoading: isLoadingLicenses } = useCollection<License>(licensesQuery);
 
   const outorgasQuery = useMemoFirebase(() => firestore ? collection(firestore, 'outorgas') : null, [firestore]);
   const { data: outorgas, isLoading: isLoadingOutorgas } = useCollection<WaterPermit>(outorgasQuery);
@@ -120,10 +133,11 @@ export default function CompliancePage() {
   const { data: intervencoes, isLoading: isLoadingIntervencoes } = useCollection<EnvironmentalIntervention>(intervencoesQuery);
 
   const projectsMap = useMemo(() => new Map(projects?.map(p => [p.id, p])), [projects]);
+  const licensesMap = useMemo(() => new Map(licenses?.map(l => [l.id, l])), [licenses]);
   const outorgasMap = useMemo(() => new Map(outorgas?.map(o => [o.id, o])), [outorgas]);
   const intervencoesMap = useMemo(() => new Map(intervencoes?.map(i => [i.id, i])), [intervencoes]);
   
-  const isLoading = isLoadingCondicionantes || isLoadingProjects || isLoadingOutorgas || isLoadingIntervencoes || (user?.role === 'client' && empreendedorIdsForUser === undefined);
+  const isLoading = isLoadingCondicionantes || isLoadingProjects || isLoadingLicenses || isLoadingOutorgas || isLoadingIntervencoes || (user?.role === 'client' && empreendedorIdsForUser === undefined);
   
   const { licencaGroups, outorgaGroups, intervencaoGroups } = useMemo(() => {
     if (!condicionantes) return { licencaGroups: new Map(), outorgaGroups: new Map(), intervencaoGroups: new Map() };
@@ -292,14 +306,24 @@ export default function CompliancePage() {
         <CardContent>
             {isLoading ? <Skeleton className="h-40 w-full"/> : (
                 <Accordion type="single" collapsible className="w-full">
-                    {Array.from(licencaGroups.entries()).map(([projectId, items]) => {
-                        const project = projectsMap.get(projectId);
+                    {Array.from(licencaGroups.entries()).map(([licenseId, items]) => {
+                        const license = licensesMap.get(licenseId);
+                        const project = license ? projectsMap.get(license.projectId) : null;
                         return (
-                            <AccordionItem value={projectId} key={projectId}>
+                            <AccordionItem value={licenseId} key={licenseId}>
                                 <AccordionTrigger>
                                     <div className="flex flex-col items-start text-left">
-                                        <span className="font-semibold">{project?.propertyName || 'Projeto não encontrado'}</span>
-                                        <span className="text-xs text-muted-foreground">{project?.processNumber || projectId}</span>
+                                        <span className="font-semibold">
+                                          {license ? `${license.permitNumber} - ${license.permitType}` : 'Licença não encontrada'}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">
+                                          {license ? `${project?.propertyName || ''} | Processo: ${license.processNumber}` : licenseId}
+                                        </span>
+                                        {license && (
+                                          <Badge variant={'outline'} className={cn('mt-1 text-[10px]', getStatusVariant(license.status as any))}>
+                                            {license.status}
+                                          </Badge>
+                                        )}
                                     </div>
                                 </AccordionTrigger>
                                 <AccordionContent>

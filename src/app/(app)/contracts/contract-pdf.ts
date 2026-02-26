@@ -5,6 +5,7 @@
 
 import type { Contract, CompanySettings } from '@/lib/types';
 import jsPDF from 'jspdf';
+import { addPageNumbers } from '@/lib/branding-pdf';
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -240,5 +241,6 @@ export async function generateContractPdf(
   doc.text('Testemunha 2: _____________________________________________.', margin, y + 0.5);
 
   addHeaderFooter();
+  addPageNumbers(doc);
   doc.save(`Contrato_Prestacao_Servicos_${(contratante.nome || 'Contratante').replace(/\s+/g, '_')}.pdf`);
 }

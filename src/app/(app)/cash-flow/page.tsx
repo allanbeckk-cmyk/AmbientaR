@@ -7,7 +7,7 @@ import { collection } from 'firebase/firestore';
 import type { Revenue, Expense, Client } from '@/lib/types';
 import jsPDF from 'jspdf';
 import { useToast } from '@/hooks/use-toast';
-import { fetchBrandingImageAsBase64 } from '@/lib/branding-pdf';
+import { fetchBrandingImageAsBase64, addPageNumbers } from '@/lib/branding-pdf';
 import { useLocalBranding } from '@/hooks/use-local-branding';
 import { CashFlowView } from './cash-flow-view';
 
@@ -173,6 +173,7 @@ export default function CashFlowPage() {
         doc.addImage(footerBase64, 'PNG', 10, pageHeight - 20, pageWidth - 20, 15);
       }
     }
+    addPageNumbers(doc);
     doc.save('lancamentos_caixa_' + periodLabel.replace(/-/g, '') + '.pdf');
     toast({ title: 'PDF exportado', description: 'Relatório por período gerado.' });
   };

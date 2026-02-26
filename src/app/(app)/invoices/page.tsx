@@ -18,7 +18,7 @@ import { MoreHorizontal, PlusCircle, Pencil, Trash2, Eye, FileText, FileDown, Pr
 import { cn } from '@/lib/utils';
 import { useCollection, useFirebase, useMemoFirebase, errorEmitter, useDoc, useAuth } from '@/firebase';
 import { collection, doc, deleteDoc, query, where } from 'firebase/firestore';
-import { fetchBrandingImageAsBase64 } from '@/lib/branding-pdf';
+import { fetchBrandingImageAsBase64, addPageNumbers } from '@/lib/branding-pdf';
 import { useLocalBranding } from '@/hooks/use-local-branding';
 import type { Invoice, Client, CompanySettings, Contract } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -366,6 +366,7 @@ export default function InvoicesPage() {
             }
         }
 
+        addPageNumbers(doc);
         doc.save(`fatura_${invoice.invoiceNumber}.pdf`);
     };
 
@@ -435,6 +436,7 @@ export default function InvoicesPage() {
                 doc.addImage(footerBase64, 'PNG', 10, pageHeight - 20, pageWidth - 20, 15);
             }
         }
+        addPageNumbers(doc);
         doc.save(`faturas_periodo_${periodLabel.replace(/-/g, '')}.pdf`);
         toast({ title: 'PDF exportado', description: 'Relatório por período gerado.' });
     };

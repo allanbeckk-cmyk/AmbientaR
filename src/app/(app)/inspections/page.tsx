@@ -23,7 +23,7 @@ import { Label } from '@/components/ui/label';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { FirestorePermissionError } from '@/firebase/errors';
-import { fetchBrandingImageAsBase64 } from '@/lib/branding-pdf';
+import { fetchBrandingImageAsBase64, addPageNumbers } from '@/lib/branding-pdf';
 import { useLocalBranding } from '@/hooks/use-local-branding';
 
 
@@ -281,11 +281,8 @@ export default function InspectionsListPage() {
             if (footerBase64) {
                 pdfDoc.addImage(footerBase64, 'PNG', 10, pageHeight - 25, pageWidth - 20, 15);
             }
-            pdfDoc.setFontSize(7);
-            pdfDoc.setTextColor(150);
-            pdfDoc.text(`Página ${i} de ${totalPages}`, pageWidth - 15, pageHeight - 5, { align: 'right' });
-            pdfDoc.setTextColor(0);
         }
+        addPageNumbers(pdfDoc);
         
         const projNameStr = typeof projectName === 'string' ? projectName : 'desconhecido';
         const fileName = `Relatorio_Vistoria_${projNameStr.replace(/\s+/g, '_')}.pdf`;

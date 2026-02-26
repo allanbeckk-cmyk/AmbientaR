@@ -26,7 +26,7 @@ import { MoreHorizontal, PlusCircle, Pencil, Trash2, Eye, FileText, CheckCircle,
 import { cn } from '@/lib/utils';
 import { useCollection, useFirebase, useMemoFirebase, errorEmitter, useDoc, useAuth } from '@/firebase';
 import { collection, doc, deleteDoc, query, where, updateDoc, getDoc } from 'firebase/firestore';
-import { fetchBrandingImageAsBase64 } from '@/lib/branding-pdf';
+import { fetchBrandingImageAsBase64, addPageNumbers } from '@/lib/branding-pdf';
 import type { CommercialProposal, Client, CompanySettings, Contract, EnvironmentalCompany } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -426,6 +426,7 @@ export default function CommercialProposalsPage() {
         pdfDoc.text(companyProfile?.cnpj || '21.367.930/0001-58', pageWidth / 2, yPos, { align: 'center' });
 
         addHeaderFooter(pdfDoc);
+        addPageNumbers(pdfDoc);
         pdfDoc.save(`proposta_${proposal.proposalNumber}.pdf`);
     };
 

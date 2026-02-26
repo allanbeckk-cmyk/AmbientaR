@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import jsPDF from 'jspdf';
+import { addPageNumbers } from '@/lib/branding-pdf';
 
 export default function AnaliseAmbientalPage() {
   const [isLoading, setIsLoading] = React.useState(false);
@@ -92,6 +93,7 @@ export default function AnaliseAmbientalPage() {
       y += 6;
     });
 
+    addPageNumbers(doc);
     doc.save(`relatorio-analise-geoespacial-${new Date().toISOString().slice(0, 10)}.pdf`);
     toast({ title: 'PDF gerado', description: 'O arquivo foi baixado.' });
   };

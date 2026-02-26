@@ -1,6 +1,7 @@
 'use client';
 
 import { getStorage, ref, getDownloadURL } from 'firebase/storage';
+import type jsPDF from 'jspdf';
 
 /**
  * Converte uma imagem (URL pública ou caminho no Firebase Storage) em base64
@@ -47,5 +48,24 @@ export async function fetchBrandingImageAsBase64(
   } catch (error) {
     console.error('Erro ao carregar imagem do branding para PDF:', error);
     return null;
+  }
+}
+
+/**
+ * Adiciona numeração de página em todos os PDFs no padrão "X/Y"
+ * no canto inferior direito de cada página.
+ */
+export function addPageNumbers(doc: jsPDF) {
+  const totalPages = doc.getNumberOfPages();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(130);
+    doc.text(`${i}/${totalPages}`, pageWidth - 12, pageHeight - 5, { align: 'right' });
+    doc.setTextColor(0);
   }
 }

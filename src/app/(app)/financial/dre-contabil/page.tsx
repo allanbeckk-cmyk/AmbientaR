@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/table';
 import jsPDF from 'jspdf';
 import { useToast } from '@/hooks/use-toast';
-import { fetchBrandingImageAsBase64 } from '@/lib/branding-pdf';
+import { fetchBrandingImageAsBase64, addPageNumbers } from '@/lib/branding-pdf';
 import { useLocalBranding } from '@/hooks/use-local-branding';
 
 const currentYear = new Date().getFullYear();
@@ -166,6 +166,7 @@ export default function DreContabilPage() {
     if (footerBase64) {
       doc.addImage(footerBase64, 'PNG', 10, pageHeight - 20, pageWidth - 20, 15);
     }
+    addPageNumbers(doc);
     doc.save(`DRE_Contabil_${selectedYear}.pdf`);
     toast({ title: 'PDF exportado', description: 'Arquivo DRE_Contabil_' + selectedYear + '.pdf' });
   };

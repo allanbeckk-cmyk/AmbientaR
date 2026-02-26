@@ -54,6 +54,7 @@ import { UserForm } from './user-form';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/firebase';
 import jsPDF from 'jspdf';
+import { addPageNumbers } from '@/lib/branding-pdf';
 import { logUserAction } from '@/lib/audit-log';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
@@ -285,6 +286,7 @@ export default function UsersPage() {
             }
             
             const fileName = `log_${logUser.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+            addPageNumbers(doc);
             doc.save(fileName);
         }
 

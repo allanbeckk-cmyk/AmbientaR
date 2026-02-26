@@ -29,6 +29,7 @@ import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import jsPDF from 'jspdf';
+import { addPageNumbers } from '@/lib/branding-pdf';
 import autoTable from 'jspdf-autotable';
 
 const tabelaDiagnosticoSchema = z.object({
@@ -217,6 +218,7 @@ export function PtrfPradForm({ onSuccess, onCancel }: PtrfPradFormProps) {
     try {
       const doc = new jsPDF({ unit: 'mm', format: 'a4' });
       buildPdf(doc, values);
+      addPageNumbers(doc);
       doc.save('Relatorio-Pericial-PRAD-PTFR-Paracatu.pdf');
       toast({ title: 'PDF gerado', description: 'O relatório foi baixado com sucesso.' });
     } catch (e) {

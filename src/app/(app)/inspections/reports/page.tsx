@@ -15,7 +15,7 @@ import { collection, getDocs, query, where, doc, updateDoc, arrayUnion } from 'f
 import { Skeleton } from '@/components/ui/skeleton';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { fetchBrandingImageAsBase64 } from '@/lib/branding-pdf';
+import { fetchBrandingImageAsBase64, addPageNumbers } from '@/lib/branding-pdf';
 import { useLocalBranding } from '@/hooks/use-local-branding';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
@@ -254,11 +254,8 @@ export default function InspectionReportsListPage() {
         if (footerBase64) {
             pdfDoc.addImage(footerBase64, 'PNG', 10, pageHeight - 25, pageWidth - 20, 15);
         }
-        pdfDoc.setFontSize(7);
-        pdfDoc.setTextColor(150);
-        pdfDoc.text(`Página ${i} de ${totalPages}`, pageWidth - 15, pageHeight - 5, { align: 'right' });
-        pdfDoc.setTextColor(0);
     }
+    addPageNumbers(pdfDoc);
     
     const fileName = `Relatorio_Vistoria_${(projectsMap.get(report.projectId) || 'desconhecido').replace(/\s+/g, '_')}.pdf`;
     pdfDoc.save(fileName);

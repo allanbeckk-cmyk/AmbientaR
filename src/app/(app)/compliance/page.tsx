@@ -61,6 +61,7 @@ export default function CompliancePage() {
 
   const searchParams = useSearchParams();
   const highlightLicenseId = searchParams.get('licenseId');
+  const highlightOutorgaId = searchParams.get('outorgaId');
 
   const { firestore } = useFirebase();
   const { user } = useAuth();
@@ -357,7 +358,7 @@ export default function CompliancePage() {
         </CardHeader>
         <CardContent>
             {isLoading ? <Skeleton className="h-40 w-full"/> : (
-                <Accordion type="single" collapsible className="w-full">
+                <Accordion type="single" collapsible className="w-full" defaultValue={highlightOutorgaId || undefined}>
                         {Array.from(outorgaGroups.entries()).map(([outorgaId, items]) => {
                         const outorga = outorgasMap.get(outorgaId);
                         return (

@@ -21,7 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, PlusCircle, Paperclip, Eye, Pencil, Trash2 } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Paperclip, Eye, Pencil, Trash2, Download, ClipboardCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCollection, useFirestore, useUser, useMemoFirebase, errorEmitter } from '@/firebase';
 import { collection, doc, deleteDoc, query, where, getDocs } from 'firebase/firestore';
@@ -218,6 +218,7 @@ export default function OutorgasPage() {
                     <TableHead>Empreendedor</TableHead>
                     <TableHead>Empreendimento</TableHead>
                     <TableHead className="hidden md:table-cell">Nº da Portaria</TableHead>
+                    <TableHead className="hidden lg:table-cell">Emissão</TableHead>
                     <TableHead className="hidden lg:table-cell">Vencimento</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
@@ -231,6 +232,7 @@ export default function OutorgasPage() {
                         <TableCell><Skeleton className="h-5 w-32" /></TableCell>
                         <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-24" /></TableCell>
                         <TableCell className="hidden lg:table-cell"><Skeleton className="h-5 w-24" /></TableCell>
+                        <TableCell className="hidden lg:table-cell"><Skeleton className="h-5 w-24" /></TableCell>
                         <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
                         <TableCell className="text-right"><Skeleton className="h-8 w-24" /></TableCell>
                       </TableRow>
@@ -240,6 +242,7 @@ export default function OutorgasPage() {
                       <TableCell className="font-medium">{empreendedoresMap.get(item.empreendedorId) || 'Não encontrado'}</TableCell>
                       <TableCell className="font-medium">{projectsMap.get(item.projectId || '') || 'N/A'}</TableCell>
                       <TableCell className="hidden md:table-cell text-muted-foreground">{item.permitNumber}</TableCell>
+                      <TableCell className="hidden lg:table-cell text-muted-foreground">{formatDate(item.issueDate)}</TableCell>
                       <TableCell className="hidden lg:table-cell text-muted-foreground">{formatDate(item.expirationDate)}</TableCell>
                       <TableCell>
                         <Badge variant={'outline'} className={cn(getStatusVariant(item.status))}>
@@ -248,19 +251,33 @@ export default function OutorgasPage() {
                       </TableCell>
                       <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
-                            {item.fileUrl && (
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    {item.fileUrl ? (
                                         <Button asChild variant="ghost" size="icon">
                                             <a href={item.fileUrl} target="_blank" rel="noopener noreferrer">
-                                                <Paperclip className="h-4 w-4" />
-                                                <span className="sr-only">Ver anexo</span>
+                                                <Download className="h-4 w-4" />
+                                                <span className="sr-only">Baixar certificado</span>
                                             </a>
                                         </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent><p>Baixar documento</p></TooltipContent>
-                                </Tooltip>
-                            )}
+                                    ) : (
+                                        <Button variant="ghost" size="icon" disabled>
+                                            <Download className="h-4 w-4" />
+                                            <span className="sr-only">Sem certificado</span>
+                                        </Button>
+                                    )}
+                                </TooltipTrigger>
+                                <TooltipContent><p>{item.fileUrl ? 'Baixar certificado da outorga' : 'Nenhum certificado anexado'}</p></TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" onClick={() => router.push(`/compliance?outorgaId=${item.id}`)}>
+                                  <ClipboardCheck className="h-4 w-4" />
+                                  <span className="sr-only">Ver condicionantes</span>
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent><p>Ver condicionantes</p></TooltipContent>
+                            </Tooltip>
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button variant="ghost" size="icon" onClick={() => handleView(item)}>
@@ -298,7 +315,7 @@ export default function OutorgasPage() {
                   ))}
                    {!isLoading && outorgas?.length === 0 && (
                         <TableRow>
-                            <TableCell colSpan={6} className="h-24 text-center">
+                            <TableCell colSpan={8} className="h-24 text-center">
                                 Nenhuma outorga encontrada.
                             </TableCell>
                         </TableRow>

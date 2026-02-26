@@ -222,6 +222,7 @@ export default function LicensesPage() {
                     <TableHead>Empreendedor</TableHead>
                     <TableHead>Empreendimento</TableHead>
                     <TableHead>Nº da Licença</TableHead>
+                    <TableHead className="hidden lg:table-cell">Emissão</TableHead>
                     <TableHead className="hidden lg:table-cell">Vencimento</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
@@ -235,6 +236,7 @@ export default function LicensesPage() {
                         <TableCell><Skeleton className="h-5 w-32" /></TableCell>
                         <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                         <TableCell className="hidden lg:table-cell"><Skeleton className="h-5 w-24" /></TableCell>
+                        <TableCell className="hidden lg:table-cell"><Skeleton className="h-5 w-24" /></TableCell>
                         <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
                         <TableCell className="text-right"><Skeleton className="h-8 w-24" /></TableCell>
                       </TableRow>
@@ -244,6 +246,7 @@ export default function LicensesPage() {
                       <TableCell className="font-medium">{empreendedoresMap.get(license.empreendedorId) || 'N/A'}</TableCell>
                       <TableCell className="font-medium">{projectsMap.get(license.projectId) || 'N/A'}</TableCell>
                       <TableCell className="font-medium">{license.permitNumber || 'N/A'}</TableCell>
+                      <TableCell className="hidden lg:table-cell text-muted-foreground">{formatDate(license.issueDate || '')}</TableCell>
                       <TableCell className="hidden lg:table-cell text-muted-foreground">{formatDate(license.expirationDate || '')}</TableCell>
                       <TableCell>
                         <Badge variant={'outline'} className={cn(getStatusVariant(license.status))}>
@@ -311,7 +314,7 @@ export default function LicensesPage() {
                   ))}
                    {!isLoading && licenses?.length === 0 && (
                         <TableRow>
-                            <TableCell colSpan={7} className="h-24 text-center">
+                            <TableCell colSpan={8} className="h-24 text-center">
                                 Nenhuma licença encontrada.
                             </TableCell>
                         </TableRow>

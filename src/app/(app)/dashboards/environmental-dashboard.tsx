@@ -187,6 +187,7 @@ export default function EnvironmentalDashboard({ initialPermits, initialCondicio
       case 'Cumprida':
         return 'bg-emerald-500/20 text-emerald-700 border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20';
       case 'Em Renovação':
+      case 'Em Execução':
         return 'bg-blue-500/20 text-blue-700 border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20';
       case 'Vencida':
       case 'Atrasada':

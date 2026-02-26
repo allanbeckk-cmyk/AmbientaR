@@ -212,6 +212,7 @@ export default function CompliancePage() {
   const getStatusVariant = (status: Condicionante['status']) => {
     switch (status) {
       case 'Pendente': return 'bg-yellow-500/20 text-yellow-700 border-yellow-500/30';
+      case 'Em Execução': return 'bg-blue-500/20 text-blue-700 border-blue-500/30';
       case 'Cumprida': return 'bg-emerald-500/20 text-emerald-700 border-emerald-500/30';
       case 'Atrasada': return 'bg-red-500/20 text-red-700 border-red-500/30';
       default: return 'bg-slate-500/20 text-slate-700 border-slate-500/30';

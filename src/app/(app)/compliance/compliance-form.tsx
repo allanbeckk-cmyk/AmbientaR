@@ -41,7 +41,7 @@ const formSchema = z.object({
   referenceType: z.enum(['licenca', 'outorga', 'intervencao']),
   description: z.string().min(1, 'A descrição da condicionante é obrigatória.'),
   dueDate: z.date({ required_error: 'A data de vencimento é obrigatória.' }),
-  status: z.enum(['Pendente', 'Cumprida', 'Atrasada', 'Não Aplicável'], { required_error: 'Selecione o status.'}),
+  status: z.enum(['Pendente', 'Em Execução', 'Cumprida', 'Atrasada', 'Não Aplicável'], { required_error: 'Selecione o status.'}),
   recurrence: z.enum(['Única', 'Mensal', 'Trimestral', 'Semestral', 'Anual'], { required_error: 'Selecione a recorrência.'}),
 });
 
@@ -55,6 +55,7 @@ interface ComplianceFormProps {
 
 const statuses: { value: Condicionante['status'], label: string }[] = [
     { value: 'Pendente', label: 'Pendente' },
+    { value: 'Em Execução', label: 'Em Execução' },
     { value: 'Cumprida', label: 'Cumprida' },
     { value: 'Atrasada', label: 'Atrasada' },
     { value: 'Não Aplicável', label: 'Não Aplicável' },

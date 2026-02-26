@@ -467,7 +467,7 @@ export type Condicionante = {
     referenceType: 'licenca' | 'outorga' | 'intervencao';
     description: string;
     dueDate: string;
-    status: 'Pendente' | 'Cumprida' | 'Atrasada' | 'Não Aplicável';
+    status: 'Pendente' | 'Em Execução' | 'Cumprida' | 'Atrasada' | 'Não Aplicável';
     recurrence: 'Única' | 'Mensal' | 'Trimestral' | 'Semestral' | 'Anual';
     fileUrl?: string;
 };

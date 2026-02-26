@@ -97,6 +97,9 @@ export default function CompliancePage() {
 
   const projectIds = useMemo(() => projects?.map(p => p.id) || [], [projects]);
 
+  const licensesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'licenses') : null, [firestore]);
+  const { data: licenses, isLoading: isLoadingLicenses } = useCollection<License>(licensesQuery);
+
   const licenseIds = useMemo(() => {
     if (!licenses || !projects) return [];
     const userProjectIdSet = new Set(projectIds);
@@ -122,9 +125,6 @@ export default function CompliancePage() {
   }, [firestore, user, clientReferenceIds, empreendedorIdsForUser]);
 
   const { data: condicionantes, isLoading: isLoadingCondicionantes } = useCollection<Condicionante>(condicionantesQuery);
-
-  const licensesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'licenses') : null, [firestore]);
-  const { data: licenses, isLoading: isLoadingLicenses } = useCollection<License>(licensesQuery);
 
   const outorgasQuery = useMemoFirebase(() => firestore ? collection(firestore, 'outorgas') : null, [firestore]);
   const { data: outorgas, isLoading: isLoadingOutorgas } = useCollection<WaterPermit>(outorgasQuery);

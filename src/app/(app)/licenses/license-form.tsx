@@ -40,7 +40,7 @@ import { collection, doc, addDoc, updateDoc } from 'firebase/firestore';
 import { DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB
 
 const formSchema = z.object({
   empreendedorId: z.string().min(1, 'Selecione um empreendedor.'),
@@ -469,7 +469,7 @@ export function LicenseForm({ currentLicense, onSuccess }: LicenseFormProps) {
             name="file"
             render={({ field }) => (
                 <FormItem>
-                    <FormLabel>Anexar Documento da Licença</FormLabel>
+                    <FormLabel>Anexar Certificado da Licença (opcional)</FormLabel>
                     <FormControl>
                         <Input 
                             type="file" 
@@ -479,7 +479,7 @@ export function LicenseForm({ currentLicense, onSuccess }: LicenseFormProps) {
                         />
                     </FormControl>
                     <FormDescription>
-                        Anexe a licença ou documento relacionado (PDF, JPG, PNG). Máx 10MB.
+                        Faça upload do certificado da licença ambiental (PDF, JPG, PNG). Máx 4MB.
                         {currentLicense?.fileUrl && !uploadedFileUrl && (
                             <span className="block mt-2 text-xs">
                                 Arquivo atual: <a href={currentLicense.fileUrl} target="_blank" className="underline" rel="noreferrer">ver anexo</a>

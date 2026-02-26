@@ -21,7 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, PlusCircle, Paperclip, Eye, Pencil, Trash2, ClipboardCheck } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Paperclip, Eye, Pencil, Trash2, ClipboardCheck, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCollection, useFirestore, useMemoFirebase, errorEmitter } from '@/firebase';
 import { collection, doc, deleteDoc, query, where, getDocs } from 'firebase/firestore';
@@ -255,19 +255,24 @@ export default function LicensesPage() {
                       </TableCell>
                       <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
-                            {license.fileUrl && (
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    {license.fileUrl ? (
                                         <Button asChild variant="ghost" size="icon">
                                             <a href={license.fileUrl} target="_blank" rel="noopener noreferrer">
-                                                <Paperclip className="h-4 w-4" />
-                                                <span className="sr-only">Ver anexo</span>
+                                                <Download className="h-4 w-4" />
+                                                <span className="sr-only">Baixar certificado</span>
                                             </a>
                                         </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent><p>Baixar documento</p></TooltipContent>
-                                </Tooltip>
-                            )}
+                                    ) : (
+                                        <Button variant="ghost" size="icon" disabled>
+                                            <Download className="h-4 w-4" />
+                                            <span className="sr-only">Sem certificado</span>
+                                        </Button>
+                                    )}
+                                </TooltipTrigger>
+                                <TooltipContent><p>{license.fileUrl ? 'Baixar certificado da licença' : 'Nenhum certificado anexado'}</p></TooltipContent>
+                            </Tooltip>
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button variant="ghost" size="icon" onClick={() => router.push(`/compliance?licenseId=${license.id}`)}>

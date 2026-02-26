@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useFirebase, useMemoFirebase, useDoc } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import type { CompanySettings } from '@/lib/types';
 
 export type LocalBranding = {
   headerImageUrl: string | null;
@@ -19,15 +22,22 @@ const empty: LocalBranding = {
 };
 
 export function useLocalBranding() {
-  const [data, setData] = useState<LocalBranding>(empty);
-  const [isLoading, setIsLoading] = useState(true);
+  const [localData, setLocalData] = useState<LocalBranding>(empty);
+  const [isLoadingLocal, setIsLoadingLocal] = useState(true);
+
+  const { firestore } = useFirebase();
+  const brandingDocRef = useMemoFirebase(
+    () => (firestore ? doc(firestore, 'companySettings', 'branding') : null),
+    [firestore]
+  );
+  const { data: firestoreData, isLoading: isLoadingFirestore } = useDoc<CompanySettings>(brandingDocRef);
 
   const refetch = useCallback(async () => {
-    setIsLoading(true);
+    setIsLoadingLocal(true);
     try {
       const res = await fetch('/api/branding');
       const json = await res.json();
-      setData({
+      setLocalData({
         headerImageUrl: json.headerImageUrl ?? null,
         footerImageUrl: json.footerImageUrl ?? null,
         watermarkImageUrl: json.watermarkImageUrl ?? null,
@@ -35,15 +45,29 @@ export function useLocalBranding() {
         systemLogoSource: json.systemLogoSource ?? 'header',
       });
     } catch {
-      setData(empty);
+      setLocalData(empty);
     } finally {
-      setIsLoading(false);
+      setIsLoadingLocal(false);
     }
   }, []);
 
   useEffect(() => {
     refetch();
   }, [refetch]);
+
+  const hasLocalImages = localData.headerImageUrl || localData.footerImageUrl || localData.watermarkImageUrl;
+
+  const data: LocalBranding = hasLocalImages
+    ? localData
+    : {
+        headerImageUrl: firestoreData?.headerImageUrl ?? null,
+        footerImageUrl: firestoreData?.footerImageUrl ?? null,
+        watermarkImageUrl: firestoreData?.watermarkImageUrl ?? null,
+        logoUsage: firestoreData?.logoUsage ?? localData.logoUsage ?? 'pdf_only',
+        systemLogoSource: firestoreData?.systemLogoSource ?? localData.systemLogoSource ?? 'header',
+      };
+
+  const isLoading = isLoadingLocal || isLoadingFirestore;
 
   return { data, isLoading, refetch };
 }

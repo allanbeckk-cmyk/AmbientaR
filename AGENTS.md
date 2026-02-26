@@ -28,3 +28,4 @@ Starts on **http://localhost:9002** (binds `0.0.0.0`). The root URL `/` redirect
 - **Firebase Auth required for app usage.** Without valid credentials the app renders the login page but won't go further. No Firebase emulators are configured.
 - **AI features (Genkit/Gemini)** require a `GOOGLE_API_KEY` or `GOOGLE_GENAI_API_KEY` env var. The rest of the app works without it.
 - **No automated test suite.** There are no test files or test framework configured in the project.
+- **`useAuth()` vs `useFirebase()` vs `useFirestore()`:** `useAuth()` returns only `{ user, login, logout, isInitialized }` — it does NOT return `firestore`. Use `useFirebase()` to get `firestore`, or `useFirestore()` for a non-null reference. Destructuring `firestore` from `useAuth()` silently yields `undefined` and breaks Firestore queries.

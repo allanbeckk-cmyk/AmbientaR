@@ -79,6 +79,7 @@ export const FirebaseProvider: React.FC<{ children: ReactNode; firebaseApp: Fire
                     const currentUser: AppUser = { 
                         id: userDoc.id,
                         ...userData,
+                        uid: firebaseUser.uid,
                         isOnline: true,
                         photoURL: userData.photoURL || firebaseUser.photoURL,
                     };
@@ -126,7 +127,7 @@ export const FirebaseProvider: React.FC<{ children: ReactNode; firebaseApp: Fire
   }, [auth, firestore, updateUserOnlineStatus]);
   
   useEffect(() => {
-    if (isInitialized && !appUser && pathname !== '/login' && pathname !== '/forgot-password') {
+    if (isInitialized && !appUser && pathname !== '/login' && pathname !== '/forgot-password' && pathname !== '/register') {
       router.push('/login');
     }
   }, [appUser, isInitialized, pathname, router]);

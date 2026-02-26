@@ -1069,6 +1069,17 @@ export type PCA = {
 
 export type UserRole = 'admin' | 'client' | 'technical' | 'sales' | 'financial' | 'gestor' | 'supervisor' | 'diretor_fauna';
 
+export type ClientPackage = 'gratuito' | 'basico' | 'intermediario' | 'avancado' | 'completo' | 'sob_consulta';
+
+export type ClientPackageInfo = {
+  id: ClientPackage;
+  name: string;
+  description: string;
+  price: string;
+  features: string[];
+  highlighted?: boolean;
+};
+
 export type NavItem = {
   href?: string;
   label: string;
@@ -1099,6 +1110,10 @@ export type AppUser = {
   isOnline?: boolean;
   lastLogin?: any;
   dataNascimento?: string;
+  phone?: string;
+  package?: ClientPackage;
+  contractAcceptedAt?: any;
+  contractSignature?: string;
 };
 
 export type OpportunityStage = 'Qualificação' | 'Proposta' | 'Negociação' | 'Fechado Ganho' | 'Fechado Perdido';

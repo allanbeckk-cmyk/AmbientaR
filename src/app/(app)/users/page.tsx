@@ -299,39 +299,142 @@ export default function UsersPage() {
     }
   };
   
+  const [isDeleteAccountOpen, setIsDeleteAccountOpen] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+
+  const getPackageLabel = (pkg?: string) => {
+    const labels: Record<string, string> = {
+      gratuito: 'Gratuito',
+      basico: 'Básico',
+      intermediario: 'Intermediário',
+      avancado: 'Avançado',
+      completo: 'Completo',
+      sob_consulta: 'Sob Consulta',
+    };
+    return pkg ? labels[pkg] || pkg : 'Não informado';
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!firestore || !auth || !user) return;
+    setIsDeletingAccount(true);
+    try {
+      const userDocRef = doc(firestore, 'users', user.id);
+      await deleteDoc(userDocRef);
+      if (auth.currentUser) {
+        await auth.currentUser.delete();
+      }
+      toast({
+        title: 'Conta excluída',
+        description: 'Sua conta e todos os seus dados foram removidos com sucesso.',
+      });
+      router.push('/login');
+    } catch (error: any) {
+      if (error.code === 'auth/requires-recent-login') {
+        toast({
+          variant: 'destructive',
+          title: 'Reautenticação necessária',
+          description: 'Por segurança, faça logout e login novamente antes de excluir sua conta.',
+        });
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Erro ao excluir conta',
+          description: 'Não foi possível excluir sua conta. Tente novamente ou entre em contato com o suporte.',
+        });
+      }
+    } finally {
+      setIsDeletingAccount(false);
+      setIsDeleteAccountOpen(false);
+    }
+  };
+
   if (user?.role === 'client') {
       const clientUser = appUsers?.[0];
       return (
+        <>
            <div className="flex flex-col h-full">
             <PageHeader title="Meu Perfil" />
-            <main className="flex-1 overflow-auto p-4 md:p-6">
+            <main className="flex-1 overflow-auto p-4 md:p-6 space-y-6 max-w-3xl mx-auto w-full">
                  {isLoading && (
                     <Card><CardHeader><CardTitle>Carregando Perfil...</CardTitle></CardHeader>
                     <CardContent><Skeleton className="h-64 w-full" /></CardContent></Card>
                  )}
                  {clientUser && (
+                   <>
                      <Card>
                         <CardHeader>
                             <CardTitle>{clientUser.name}</CardTitle>
                             <CardDescription>Suas informações de perfil e de acesso.</CardDescription>
                         </CardHeader>
                          <CardContent className="space-y-4">
-                            <DetailItem label="Email" value={clientUser.email} />
+                            <h4 className="font-semibold text-foreground">Informações Pessoais</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <DetailItem label="Email" value={clientUser.email} />
+                              <DetailItem label="Telefone" value={(clientUser as any).phone} />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <DetailItem label="CPF" value={clientUser.cpf} />
+                              <DetailItem label="Data de Nascimento" value={clientUser.dataNascimento ? new Date(clientUser.dataNascimento).toLocaleDateString('pt-BR') : ''} />
+                            </div>
+                            <DetailItem label="CNPJs Vinculados" value={clientUser.cnpjs} />
                             <Separator />
-                            <div className="grid grid-cols-2 gap-4">
+                            <h4 className="font-semibold text-foreground">Plano e Acesso</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                               <DetailItem label="Pacote Contratado" value={getPackageLabel((clientUser as any).package)} />
                                <DetailItem label="Nível de Acesso" value={getRoleText(clientUser.role)} />
                                <DetailItem label="Status da Conta" value={clientUser.status === 'active' ? 'Ativo' : 'Inativo'} />
                             </div>
-                            <Separator />
-                             <h4 className="font-semibold text-foreground">Documentos</h4>
-                             <DetailItem label="CPF" value={clientUser.cpf} />
-                             <DetailItem label="CNPJs Vinculados" value={clientUser.cnpjs} />
-                             <DetailItem label="Data de Nascimento" value={clientUser.dataNascimento ? new Date(clientUser.dataNascimento).toLocaleDateString('pt-BR') : ''} />
                          </CardContent>
                     </Card>
+
+                    <Card className="border-destructive/30">
+                        <CardHeader>
+                            <CardTitle className="text-destructive flex items-center gap-2">
+                              <Trash2 className="h-5 w-5" />
+                              Exclusão de Dados
+                            </CardTitle>
+                            <CardDescription>
+                              Solicite a exclusão da sua conta e de todos os seus dados pessoais da plataforma. Esta ação é irreversível.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Button
+                              variant="destructive"
+                              onClick={() => setIsDeleteAccountOpen(true)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Excluir minha conta e dados
+                            </Button>
+                        </CardContent>
+                    </Card>
+                   </>
                  )}
             </main>
         </div>
+
+        <AlertDialog open={isDeleteAccountOpen} onOpenChange={setIsDeleteAccountOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Excluir sua conta permanentemente?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta ação <span className="font-semibold">não pode ser desfeita</span>. Ao confirmar, todos os seus dados pessoais,
+                incluindo nome, e-mail, telefone, CPF e histórico de uso serão removidos permanentemente da plataforma AmbientaR.
+                Você perderá acesso ao sistema e não poderá recuperar sua conta.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isDeletingAccount}>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteAccount}
+                disabled={isDeletingAccount}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {isDeletingAccount ? 'Excluindo...' : 'Sim, excluir minha conta'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        </>
       )
   }
 

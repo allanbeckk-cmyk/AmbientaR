@@ -26,7 +26,13 @@ function LoginPageContent() {
         </p>
       </div>
       <LoginForm />
-      <div className="mt-6 text-center text-xs text-muted-foreground">
+      <div className="mt-4 text-center text-sm text-muted-foreground">
+        Não tem uma conta?{' '}
+        <Link href="/register" className="underline hover:text-primary transition-colors font-medium text-primary">
+          Cadastre-se
+        </Link>
+      </div>
+      <div className="mt-2 text-center text-xs text-muted-foreground">
         <Link href="/forgot-password" className="underline hover:text-primary transition-colors">
           Esqueceu a senha?
         </Link>

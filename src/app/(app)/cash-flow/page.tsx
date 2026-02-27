@@ -7,7 +7,7 @@ import { collection } from 'firebase/firestore';
 import type { Revenue, Expense, Client } from '@/lib/types';
 import jsPDF from 'jspdf';
 import { useToast } from '@/hooks/use-toast';
-import { fetchBrandingImageAsBase64, getImageDimensions, calcPdfImageSize } from '@/lib/branding-pdf';
+import { fetchBrandingImageAsBase64, getImageDimensions, calcPdfImageSize, applyImageOpacity } from '@/lib/branding-pdf';
 import { useLocalBranding } from '@/hooks/use-local-branding';
 import { CashFlowView } from './cash-flow-view';
 
@@ -107,7 +107,8 @@ export default function CashFlowPage() {
   const handleExportPdf = async () => {
     const headerBase64 = await fetchBrandingImageAsBase64(brandingData?.headerImageUrl);
     const footerBase64 = await fetchBrandingImageAsBase64(brandingData?.footerImageUrl);
-    const watermarkBase64 = await fetchBrandingImageAsBase64(brandingData?.watermarkImageUrl);
+    const watermarkBase64Raw = await fetchBrandingImageAsBase64(brandingData?.watermarkImageUrl);
+    const watermarkBase64 = watermarkBase64Raw ? await applyImageOpacity(watermarkBase64Raw, 0.15) : null;
 
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
     const pageWidth = doc.internal.pageSize.getWidth();

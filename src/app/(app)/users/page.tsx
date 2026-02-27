@@ -28,7 +28,7 @@ import type { AppUser, AuditLog, CompanySettings } from '@/lib/types';
 import { useCollection, useMemoFirebase, errorEmitter, useFirebase, useDoc } from '@/firebase';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { collection, deleteDoc, doc, query, where, getDocs, orderBy } from 'firebase/firestore';
-import { fetchBrandingImageAsBase64, getImageDimensions, calcPdfImageSize } from '@/lib/branding-pdf';
+import { fetchBrandingImageAsBase64, getImageDimensions, calcPdfImageSize, applyImageOpacity } from '@/lib/branding-pdf';
 import { useLocalBranding } from '@/hooks/use-local-branding';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -223,7 +223,8 @@ export default function UsersPage() {
             
             const headerBase64 = await fetchBrandingImageAsBase64(brandingData?.headerImageUrl);
             const footerBase64 = await fetchBrandingImageAsBase64(brandingData?.footerImageUrl);
-            const watermarkBase64 = await fetchBrandingImageAsBase64(brandingData?.watermarkImageUrl);
+            const watermarkBase64Raw = await fetchBrandingImageAsBase64(brandingData?.watermarkImageUrl);
+            const watermarkBase64 = watermarkBase64Raw ? await applyImageOpacity(watermarkBase64Raw, 0.15) : null;
             
             const pageHeight = doc.internal.pageSize.getHeight();
             const pageWidth = doc.internal.pageSize.getWidth();

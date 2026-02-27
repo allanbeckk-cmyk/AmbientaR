@@ -5,7 +5,7 @@
 
 import type { Contract, CompanySettings } from '@/lib/types';
 import jsPDF from 'jspdf';
-import { getImageDimensions } from '@/lib/branding-pdf';
+import { getImageDimensions, applyImageOpacity } from '@/lib/branding-pdf';
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -116,7 +116,8 @@ export async function generateContractPdf(
 
   const headerBase64 = await fetchBrandingImageAsBase64(brandingData?.headerImageUrl);
   const footerBase64 = await fetchBrandingImageAsBase64(brandingData?.footerImageUrl);
-  const watermarkBase64 = await fetchBrandingImageAsBase64(brandingData?.watermarkImageUrl);
+  const watermarkBase64Raw = await fetchBrandingImageAsBase64(brandingData?.watermarkImageUrl);
+  const watermarkBase64 = watermarkBase64Raw ? await applyImageOpacity(watermarkBase64Raw, 0.15) : null;
 
   /** Desenha a marca d'água na página atual (atrás do texto, para não sobrepor o conteúdo). */
   const drawWatermarkOnCurrentPage = () => {

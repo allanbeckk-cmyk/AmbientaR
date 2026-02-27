@@ -20,6 +20,27 @@ export function getImageDimensions(base64: string): Promise<ImageDimensions> {
 }
 
 /**
+ * Aplica transparência a uma imagem base64 via Canvas, retornando novo base64.
+ * opacity: 0 = invisível, 1 = opaco. Use ~0.15 para marca d'água sutil.
+ */
+export function applyImageOpacity(base64: string, opacity: number): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d')!;
+      ctx.globalAlpha = opacity;
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve(base64);
+    img.src = base64;
+  });
+}
+
+/**
  * Calcula largura e altura para o PDF preservando a proporção original da imagem.
  * A imagem nunca ultrapassa maxWidthMm. Se a altura calculada ultrapassar
  * maxHeightMm, reduz proporcionalmente pela altura.

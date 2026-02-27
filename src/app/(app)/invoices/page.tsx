@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils';
 import { useCollection, useFirebase, useMemoFirebase, errorEmitter, useDoc, useAuth } from '@/firebase';
 import { collection, doc, deleteDoc, query, where, getDocs } from 'firebase/firestore';
 import * as React from 'react';
-import { fetchBrandingImageAsBase64, getImageDimensions, calcPdfImageSize } from '@/lib/branding-pdf';
+import { fetchBrandingImageAsBase64, getImageDimensions, calcPdfImageSize, applyImageOpacity } from '@/lib/branding-pdf';
 import { useLocalBranding } from '@/hooks/use-local-branding';
 import type { Invoice, Client, CompanySettings, Contract } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -272,7 +272,8 @@ export default function InvoicesPage() {
         
         const headerBase64 = await fetchBrandingImageAsBase64(brandingData?.headerImageUrl);
         const footerBase64 = await fetchBrandingImageAsBase64(brandingData?.footerImageUrl);
-        const watermarkBase64 = await fetchBrandingImageAsBase64(brandingData?.watermarkImageUrl);
+        const watermarkBase64Raw = await fetchBrandingImageAsBase64(brandingData?.watermarkImageUrl);
+        const watermarkBase64 = watermarkBase64Raw ? await applyImageOpacity(watermarkBase64Raw, 0.15) : null;
 
 
         const pageHeight = doc.internal.pageSize.getHeight();
@@ -409,7 +410,8 @@ export default function InvoicesPage() {
     const handleExportPdfByPeriod = async () => {
         const headerBase64 = await fetchBrandingImageAsBase64(brandingData?.headerImageUrl);
         const footerBase64 = await fetchBrandingImageAsBase64(brandingData?.footerImageUrl);
-        const watermarkBase64 = await fetchBrandingImageAsBase64(brandingData?.watermarkImageUrl);
+        const watermarkBase64Raw = await fetchBrandingImageAsBase64(brandingData?.watermarkImageUrl);
+        const watermarkBase64 = watermarkBase64Raw ? await applyImageOpacity(watermarkBase64Raw, 0.15) : null;
 
         const doc = new jsPDF({ unit: 'mm', format: 'a4' });
         const pageWidth = doc.internal.pageSize.getWidth();

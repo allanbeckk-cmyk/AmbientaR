@@ -27,7 +27,7 @@ import { cn } from '@/lib/utils';
 import { useCollection, useFirebase, useMemoFirebase, errorEmitter, useDoc, useAuth } from '@/firebase';
 import { collection, doc, deleteDoc, query, where, updateDoc, getDoc, getDocs } from 'firebase/firestore';
 import * as React from 'react';
-import { fetchBrandingImageAsBase64, getImageDimensions, calcPdfImageSize } from '@/lib/branding-pdf';
+import { fetchBrandingImageAsBase64, getImageDimensions, calcPdfImageSize, applyImageOpacity } from '@/lib/branding-pdf';
 import type { CommercialProposal, Client, CompanySettings, Contract, EnvironmentalCompany } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -280,7 +280,8 @@ export default function CommercialProposalsPage() {
         
         const headerBase64 = await fetchBrandingImageAsBase64(brandingData?.headerImageUrl ?? undefined);
         const footerBase64 = await fetchBrandingImageAsBase64(brandingData?.footerImageUrl ?? undefined);
-        const watermarkBase64 = await fetchBrandingImageAsBase64(brandingData?.watermarkImageUrl ?? undefined);
+        const watermarkBase64Raw = await fetchBrandingImageAsBase64(brandingData?.watermarkImageUrl ?? undefined);
+        const watermarkBase64 = watermarkBase64Raw ? await applyImageOpacity(watermarkBase64Raw, 0.15) : null;
 
         const pageHeight = pdfDoc.internal.pageSize.getHeight();
         const pageWidth = pdfDoc.internal.pageSize.getWidth();

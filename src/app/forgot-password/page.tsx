@@ -129,7 +129,7 @@ export default function ForgotPasswordPage() {
         </div>
       </div>
        <div className="absolute bottom-6 text-center text-xs text-muted-foreground/80">
-        <p>Desenvolvido por Pimenta Consultoria Ambiental</p>
+        <p>Barros e Sá Investimentos</p>
       </div>
     </div>
   );

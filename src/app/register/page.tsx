@@ -572,7 +572,7 @@ export default function RegisterPage() {
         </div>
       </div>
       <div className="absolute bottom-6 text-center text-xs text-muted-foreground/80">
-        <p>Barros e Sá Investimentos</p>
+        <p>Desenvolvido por Barros e Sá Investimentos</p>
       </div>
     </div>
   );

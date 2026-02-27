@@ -255,7 +255,7 @@ export function UpgradeButton() {
         )}
       >
         <ArrowUp className="h-3.5 w-3.5" />
-        <span className="hidden sm:inline">{isComplete ? 'Meu Plano' : 'Upgrade'}</span>
+        <span className="hidden sm:inline">Alterar Plano</span>
       </Button>
       <UpgradeDialog open={open} onOpenChange={setOpen} />
     </>

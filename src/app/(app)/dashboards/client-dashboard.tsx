@@ -21,7 +21,31 @@ export default function ClientDashboard() {
 
   useEffect(() => {
     if (user && firestore) {
-        setEmpreendedorIds(undefined); // Start in a loading state
+        setEmpreendedorIds(undefined);
+
+        const isSelfRegistered = !!(user as any).package;
+
+        if (isSelfRegistered) {
+            const empreendedoresRef = collection(firestore, 'empreendedores');
+            const qByUserId = query(empreendedoresRef, where('userId', '==', user.id));
+            getDocs(qByUserId).then((snapshot) => {
+                const ids = snapshot.docs.map(d => d.id);
+                setEmpreendedorIds(ids.length > 0 ? ids : ['non-existent-placeholder']);
+            }).catch(() => {
+                setEmpreendedorIds(['non-existent-placeholder']);
+            });
+
+            const clientsRef = collection(firestore, 'clients');
+            const qClientByUserId = query(clientsRef, where('userId', '==', user.id));
+            getDocs(qClientByUserId).then((snapshot) => {
+                if (!snapshot.empty) {
+                    setClientId(snapshot.docs[0].id);
+                }
+            }).catch(() => {});
+
+            return;
+        }
+
         const userDocuments = [user.cpf, ...(user.cnpjs || [])].filter(Boolean) as string[];
         if (userDocuments.length > 0) {
             const clientsRef = collection(firestore, 'clients');

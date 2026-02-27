@@ -24,7 +24,8 @@ import {
 } from '@/components/ui/dialog';
 import { MoreHorizontal, PlusCircle, FileText, Pencil, Trash2, Eye, Upload, CheckCircle, Loader2 } from 'lucide-react';
 import { useCollection, useFirebase, useMemoFirebase, errorEmitter, useDoc, useAuth } from '@/firebase';
-import { collection, doc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { collection, doc, deleteDoc, updateDoc, query, where, getDocs } from 'firebase/firestore';
+import * as React from 'react';
 import { getStorage, ref, getDownloadURL, uploadBytes } from "firebase/storage";
 import { fetchBrandingImageAsBase64 } from '@/lib/branding-pdf';
 import { useLocalBranding } from '@/hooks/use-local-branding';
@@ -84,10 +85,35 @@ export default function ContractsPage() {
   const { firestore } = useFirebase();
   const { toast } = useToast();
 
+  const [clientIdsForUser, setClientIdsForUser] = useState<string[] | null>(null);
+
+  React.useEffect(() => {
+    if (!firestore || !user || user.role !== 'client') return;
+    const isSelfRegistered = !!(user as any).package;
+    if (isSelfRegistered) {
+      const cRef = collection(firestore, 'clients');
+      const q = query(cRef, where('userId', '==', user.id));
+      getDocs(q).then((snap) => setClientIdsForUser(snap.docs.map(d => d.id))).catch(() => setClientIdsForUser([]));
+    } else {
+      const docs = [user.cpf, ...(user.cnpjs || [])].filter(Boolean) as string[];
+      if (docs.length > 0) {
+        const cRef = collection(firestore, 'clients');
+        const q = query(cRef, where('cpfCnpj', 'in', docs));
+        getDocs(q).then((snap) => setClientIdsForUser(snap.docs.map(d => d.id))).catch(() => setClientIdsForUser([]));
+      } else {
+        setClientIdsForUser([]);
+      }
+    }
+  }, [firestore, user]);
+
   const contractsQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
+    if (user.role === 'client') {
+      if (!clientIdsForUser || clientIdsForUser.length === 0) return null;
+      return query(collection(firestore, 'contracts'), where('clientId', 'in', clientIdsForUser));
+    }
     return collection(firestore, 'contracts');
-  }, [firestore, user]);
+  }, [firestore, user, clientIdsForUser]);
 
   const { data: contracts, isLoading: isLoadingContracts } = useCollection<Contract>(contractsQuery);
 

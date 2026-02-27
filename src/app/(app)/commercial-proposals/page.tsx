@@ -25,7 +25,8 @@ import {
 import { MoreHorizontal, PlusCircle, Pencil, Trash2, Eye, FileText, CheckCircle, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCollection, useFirebase, useMemoFirebase, errorEmitter, useDoc, useAuth } from '@/firebase';
-import { collection, doc, deleteDoc, query, where, updateDoc, getDoc } from 'firebase/firestore';
+import { collection, doc, deleteDoc, query, where, updateDoc, getDoc, getDocs } from 'firebase/firestore';
+import * as React from 'react';
 import { fetchBrandingImageAsBase64 } from '@/lib/branding-pdf';
 import type { CommercialProposal, Client, CompanySettings, Contract, EnvironmentalCompany } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -93,22 +94,35 @@ export default function CommercialProposalsPage() {
     const { firestore, auth, user } = useFirebase();
     const { toast } = useToast();
 
+    const [clientIdsForUser, setClientIdsForUser] = useState<string[] | null>(null);
+
+    React.useEffect(() => {
+        if (!firestore || !user || user.role !== 'client') return;
+        const isSelfRegistered = !!(user as any).package;
+        if (isSelfRegistered) {
+            const cRef = collection(firestore, 'clients');
+            const q = query(cRef, where('userId', '==', user.id));
+            getDocs(q).then((snap) => setClientIdsForUser(snap.docs.map(d => d.id))).catch(() => setClientIdsForUser([]));
+        } else {
+            const docs = [user.cpf, ...(user.cnpjs || [])].filter(Boolean) as string[];
+            if (docs.length > 0) {
+                const cRef = collection(firestore, 'clients');
+                const q = query(cRef, where('cpfCnpj', 'in', docs));
+                getDocs(q).then((snap) => setClientIdsForUser(snap.docs.map(d => d.id))).catch(() => setClientIdsForUser([]));
+            } else {
+                setClientIdsForUser([]);
+            }
+        }
+    }, [firestore, user]);
+
     const proposalsQuery = useMemoFirebase(() => {
         if (!firestore || !user) return null;
         if (user.role === 'client') {
-            const clientCpfCnpj = [user.cpf, ...(user.cnpjs || [])].filter(Boolean);
-            if (clientCpfCnpj.length === 0) {
-                // Return a query that finds nothing if no identifying document is available
-                return query(collection(firestore, 'commercialProposals'), where('clientId', '==', 'no-client-found'));
-            }
-            // This is not perfectly secure, as we query clients first.
-            // A better approach would be to have a direct link like `userId` on the proposal.
-            // For now, we'll rely on client-side filtering after fetching proposals for clients linked by CPF/CNPJ.
-            // This assumes `clients` data is available to filter.
-            return collection(firestore, 'commercialProposals');
+            if (!clientIdsForUser || clientIdsForUser.length === 0) return null;
+            return query(collection(firestore, 'commercialProposals'), where('clientId', 'in', clientIdsForUser));
         }
         return collection(firestore, 'commercialProposals');
-    }, [firestore, user]);
+    }, [firestore, user, clientIdsForUser]);
 
     const { data: proposals, isLoading: isLoadingProposals } = useCollection<CommercialProposal>(proposalsQuery);
     

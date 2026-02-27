@@ -17,7 +17,8 @@ import { Badge } from '@/components/ui/badge';
 import { MoreHorizontal, PlusCircle, Pencil, Trash2, Eye, FileText, FileDown, Printer } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCollection, useFirebase, useMemoFirebase, errorEmitter, useDoc, useAuth } from '@/firebase';
-import { collection, doc, deleteDoc, query, where } from 'firebase/firestore';
+import { collection, doc, deleteDoc, query, where, getDocs } from 'firebase/firestore';
+import * as React from 'react';
 import { fetchBrandingImageAsBase64 } from '@/lib/branding-pdf';
 import { useLocalBranding } from '@/hooks/use-local-branding';
 import type { Invoice, Client, CompanySettings, Contract } from '@/lib/types';
@@ -106,15 +107,42 @@ export default function InvoicesPage() {
     const { firestore, auth, user } = useFirebase();
     const { toast } = useToast();
 
+    const [clientIdsForUser, setClientIdsForUser] = useState<string[] | null>(null);
+
+    React.useEffect(() => {
+        if (!firestore || !user || user.role !== 'client') return;
+        const isSelfRegistered = !!(user as any).package;
+        if (isSelfRegistered) {
+            const clientsRef = collection(firestore, 'clients');
+            const q = query(clientsRef, where('userId', '==', user.id));
+            getDocs(q).then((snap) => {
+                setClientIdsForUser(snap.docs.map(d => d.id));
+            }).catch(() => setClientIdsForUser([]));
+        } else {
+            const userDocuments = [user.cpf, ...(user.cnpjs || [])].filter(Boolean) as string[];
+            if (userDocuments.length > 0) {
+                const clientsRef = collection(firestore, 'clients');
+                const q = query(clientsRef, where('cpfCnpj', 'in', userDocuments));
+                getDocs(q).then((snap) => {
+                    setClientIdsForUser(snap.docs.map(d => d.id));
+                }).catch(() => setClientIdsForUser([]));
+            } else {
+                setClientIdsForUser([]);
+            }
+        }
+    }, [firestore, user]);
+
     const invoicesQuery = useMemoFirebase(() => {
         if (!firestore || !user) return null;
-        if(user.role === 'admin' || user.role === 'financial' || user.role === 'supervisor') {
+        if (user.role === 'admin' || user.role === 'financial' || user.role === 'supervisor') {
             return collection(firestore, 'invoices');
         }
-        // Clientes podem ver suas próprias faturas - a lógica de filtro real pode ser mais complexa
-        return query(collection(firestore, 'invoices'));
-
-    }, [firestore, user]);
+        if (user.role === 'client') {
+            if (!clientIdsForUser || clientIdsForUser.length === 0) return null;
+            return query(collection(firestore, 'invoices'), where('clientId', 'in', clientIdsForUser));
+        }
+        return null;
+    }, [firestore, user, clientIdsForUser]);
 
     const { data: invoices, isLoading: isLoadingInvoices } = useCollection<Invoice>(invoicesQuery);
     

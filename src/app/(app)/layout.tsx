@@ -41,6 +41,7 @@ import { cn } from '@/lib/utils';
 import { useFirebase, useAuth, useCollection, useMemoFirebase, useDoc } from '@/firebase';
 import { collection, query, orderBy, doc, updateDoc } from 'firebase/firestore';
 import ChatWidget from '@/components/chat-widget';
+import { UpgradeButton } from '@/components/upgrade-dialog';
 import { getStorage, ref, getDownloadURL } from 'firebase/storage';
 import NavContent from '@/components/nav-content';
 import { SidebarDebugger } from '@/components/sidebar-debugger';
@@ -198,7 +199,8 @@ const AppLayoutClient = ({ children }: { children: React.ReactNode }) => {
                  </Link>
              </div>
              
-             <div className="flex items-center gap-4">
+             <div className="flex items-center gap-2 sm:gap-4">
+               <UpgradeButton />
                <DropdownMenu>
                    <DropdownMenuTrigger asChild>
                        <Button variant="ghost" size="icon" className="relative">

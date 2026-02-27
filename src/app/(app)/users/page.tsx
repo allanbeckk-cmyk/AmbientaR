@@ -22,7 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, PlusCircle, History, Pencil, Trash2, Eye } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, History, Pencil, Trash2, Eye, ArrowUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { AppUser, AuditLog, CompanySettings } from '@/lib/types';
 import { useCollection, useMemoFirebase, errorEmitter, useFirebase, useDoc } from '@/firebase';
@@ -55,6 +55,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/firebase';
 import jsPDF from 'jspdf';
 import { logUserAction } from '@/lib/audit-log';
+import { UpgradeDialog } from '@/components/upgrade-dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
@@ -301,6 +302,7 @@ export default function UsersPage() {
   
   const [isDeleteAccountOpen, setIsDeleteAccountOpen] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
 
   const getPackageLabel = (pkg?: string) => {
     const labels: Record<string, string> = {
@@ -385,7 +387,17 @@ export default function UsersPage() {
                             </div>
                             <DetailItem label="CNPJs Vinculados" value={clientUser.cnpjs} />
                             <Separator />
-                            <h4 className="font-semibold text-foreground">Plano e Acesso</h4>
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-semibold text-foreground">Plano e Acesso</h4>
+                              <Button
+                                size="sm"
+                                onClick={() => setIsUpgradeOpen(true)}
+                                className="gap-1.5 bg-gradient-to-r from-primary to-emerald-500 hover:from-primary/90 hover:to-emerald-500/90 text-white"
+                              >
+                                <ArrowUp className="h-3.5 w-3.5" />
+                                Alterar Plano
+                              </Button>
+                            </div>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                <DetailItem label="Pacote Contratado" value={getPackageLabel((clientUser as any).package)} />
                                <DetailItem label="Nível de Acesso" value={getRoleText(clientUser.role)} />
@@ -418,6 +430,8 @@ export default function UsersPage() {
                  )}
             </main>
         </div>
+
+        <UpgradeDialog open={isUpgradeOpen} onOpenChange={setIsUpgradeOpen} />
 
         <AlertDialog open={isDeleteAccountOpen} onOpenChange={setIsDeleteAccountOpen}>
           <AlertDialogContent>

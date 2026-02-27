@@ -348,18 +348,25 @@ export default function UsersPage() {
     }
   };
 
+  const clientProfileDocRef = useMemoFirebase(() => {
+    if (!firestore || !user || user.role !== 'client') return null;
+    return doc(firestore, 'users', user.id);
+  }, [firestore, user]);
+  const { data: clientProfile, isLoading: isLoadingProfile } = useDoc<AppUser>(clientProfileDocRef);
+
   if (user?.role === 'client') {
-      const clientUser = appUsers?.[0];
+      const clientUser = clientProfile || user;
+
       return (
         <>
            <div className="flex flex-col h-full">
             <PageHeader title="Meu Perfil" />
             <main className="flex-1 overflow-auto p-4 md:p-6 space-y-6 max-w-3xl mx-auto w-full">
-                 {isLoading && (
+                 {isLoadingProfile && (
                     <Card><CardHeader><CardTitle>Carregando Perfil...</CardTitle></CardHeader>
                     <CardContent><Skeleton className="h-64 w-full" /></CardContent></Card>
                  )}
-                 {clientUser && (
+                 {clientUser && !isLoadingProfile && (
                    <>
                      <Card>
                         <CardHeader>

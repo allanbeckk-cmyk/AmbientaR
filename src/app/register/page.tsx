@@ -135,46 +135,86 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-function getContractText(packageId: ClientPackage | undefined): string {
-  const baseContract = `TERMOS DE USO E CONTRATO DE PRESTAÇÃO DE SERVIÇOS
+function ContractContent({ packageId }: { packageId: ClientPackage | undefined }) {
+  const clauseNum = (n: number) => {
+    const ordinals = ['', '1ª', '2ª', '3ª', '4ª', '5ª', '6ª', '7ª'];
+    return ordinals[n] || `${n}ª`;
+  };
+  let nextClause = 5;
 
-PIMENTA CONSULTORIA AMBIENTAL, pessoa jurídica de direito privado, doravante denominada CONTRATADA, e o USUÁRIO, pessoa física ou jurídica que realiza o cadastro nesta plataforma, doravante denominado CONTRATANTE, celebram o presente contrato mediante as seguintes cláusulas:
+  return (
+    <div
+      className="font-sans text-xs leading-relaxed text-foreground/80"
+      style={{
+        paddingTop: '1.5cm',
+        paddingBottom: '1cm',
+        paddingLeft: '1.5cm',
+        paddingRight: '1cm',
+        textAlign: 'justify',
+      }}
+    >
+      <h2 className="text-sm font-bold text-center mb-4 uppercase">
+        Termos de Uso e Contrato de Prestação de Serviços
+      </h2>
 
-CLÁUSULA 1ª — DO OBJETO
-O presente contrato tem por objeto a prestação de serviços de acesso à plataforma AmbientaR — Gestão Ambiental Inteligente, conforme o plano selecionado pelo CONTRATANTE.
+      <p className="mb-3">
+        PIMENTA CONSULTORIA AMBIENTAL, pessoa jurídica de direito privado, doravante denominada CONTRATADA, e o USUÁRIO,
+        pessoa física ou jurídica que realiza o cadastro nesta plataforma, doravante denominado CONTRATANTE, celebram o
+        presente contrato mediante as seguintes cláusulas:
+      </p>
 
-CLÁUSULA 2ª — DAS OBRIGAÇÕES DO CONTRATANTE
-O CONTRATANTE se compromete a:
-a) Fornecer informações verdadeiras e atualizadas;
-b) Manter a confidencialidade de suas credenciais de acesso;
-c) Utilizar a plataforma de acordo com a legislação vigente.
+      <h3 className="font-bold mt-4 mb-1">CLÁUSULA 1ª — DO OBJETO</h3>
+      <p className="mb-3">
+        O presente contrato tem por objeto a prestação de serviços de acesso à plataforma AmbientaR — Gestão Ambiental
+        Inteligente, conforme o plano selecionado pelo CONTRATANTE.
+      </p>
 
-CLÁUSULA 3ª — DAS OBRIGAÇÕES DA CONTRATADA
-A CONTRATADA se compromete a:
-a) Disponibilizar os serviços contratados conforme o plano escolhido;
-b) Manter a segurança e a integridade dos dados do CONTRATANTE;
-c) Prestar suporte técnico conforme o nível do plano contratado.
+      <h3 className="font-bold mt-4 mb-1">CLÁUSULA 2ª — DAS OBRIGAÇÕES DO CONTRATANTE</h3>
+      <p className="mb-1">O CONTRATANTE se compromete a:</p>
+      <p className="pl-4 mb-0.5">a) Fornecer informações verdadeiras e atualizadas;</p>
+      <p className="pl-4 mb-0.5">b) Manter a confidencialidade de suas credenciais de acesso;</p>
+      <p className="pl-4 mb-3">c) Utilizar a plataforma de acordo com a legislação vigente.</p>
 
-CLÁUSULA 4ª — DA PRIVACIDADE E PROTEÇÃO DE DADOS
-Os dados pessoais do CONTRATANTE serão tratados em conformidade com a Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018).`;
+      <h3 className="font-bold mt-4 mb-1">CLÁUSULA 3ª — DAS OBRIGAÇÕES DA CONTRATADA</h3>
+      <p className="mb-1">A CONTRATADA se compromete a:</p>
+      <p className="pl-4 mb-0.5">a) Disponibilizar os serviços contratados conforme o plano escolhido;</p>
+      <p className="pl-4 mb-0.5">b) Manter a segurança e a integridade dos dados do CONTRATANTE;</p>
+      <p className="pl-4 mb-3">c) Prestar suporte técnico conforme o nível do plano contratado.</p>
 
-  const basicClause = `
+      <h3 className="font-bold mt-4 mb-1">CLÁUSULA 4ª — DA PRIVACIDADE E PROTEÇÃO DE DADOS</h3>
+      <p className="mb-3">
+        Os dados pessoais do CONTRATANTE serão tratados em conformidade com a Lei Geral de Proteção de Dados
+        (LGPD — Lei nº 13.709/2018).
+      </p>
 
-CLÁUSULA 5ª — DO CONSENTIMENTO PARA COMUNICAÇÃO COMERCIAL (PLANO BÁSICO)
-Ao optar pelo plano Básico, o CONTRATANTE autoriza expressamente a CONTRATADA a acessar seus dados cadastrais (nome, e-mail, telefone e endereço) para fins de:
-a) Comunicação sobre serviços de consultoria e assessoria ambiental;
-b) Envio de propostas comerciais relacionadas à área ambiental;
-c) Contato para oferecimento de serviços complementares.
-O CONTRATANTE pode revogar este consentimento a qualquer momento mediante solicitação formal.`;
+      {packageId === 'basico' && (
+        <>
+          <h3 className="font-bold mt-4 mb-1">CLÁUSULA 5ª — DO CONSENTIMENTO PARA COMUNICAÇÃO COMERCIAL (PLANO BÁSICO)</h3>
+          <p className="mb-1">
+            Ao optar pelo plano Básico, o CONTRATANTE autoriza expressamente a CONTRATADA a acessar seus dados cadastrais
+            (nome, e-mail, telefone e endereço) para fins de:
+          </p>
+          <p className="pl-4 mb-0.5">a) Comunicação sobre serviços de consultoria e assessoria ambiental;</p>
+          <p className="pl-4 mb-0.5">b) Envio de propostas comerciais relacionadas à área ambiental;</p>
+          <p className="pl-4 mb-1">c) Contato para oferecimento de serviços complementares.</p>
+          <p className="mb-3">
+            O CONTRATANTE pode revogar este consentimento a qualquer momento mediante solicitação formal.
+          </p>
+          {(() => { nextClause = 6; return null; })()}
+        </>
+      )}
 
-  const finalClause = `
+      <h3 className="font-bold mt-4 mb-1">CLÁUSULA {clauseNum(nextClause)} — DO FORO</h3>
+      <p className="mb-3">
+        Fica eleito o foro da comarca de Belo Horizonte — MG para dirimir quaisquer dúvidas ou controvérsias
+        decorrentes deste contrato.
+      </p>
 
-CLÁUSULA ${packageId === 'basico' ? '6ª' : '5ª'} — DO FORO
-Fica eleito o foro da comarca de Belo Horizonte — MG para dirimir quaisquer dúvidas ou controvérsias decorrentes deste contrato.
-
-Ao assinar abaixo, o CONTRATANTE declara ter lido e concordado com todos os termos deste contrato.`;
-
-  return baseContract + (packageId === 'basico' ? basicClause : '') + finalClause;
+      <p className="mt-4 text-center italic">
+        Ao aceitar abaixo, o CONTRATANTE declara ter lido e concordado com todos os termos deste contrato.
+      </p>
+    </div>
+  );
 }
 
 export default function RegisterPage() {
@@ -474,10 +514,8 @@ export default function RegisterPage() {
         <CardDescription>Leia os termos e assine para concluir seu cadastro.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="rounded-lg border bg-muted/30 p-4 max-h-64 overflow-y-auto">
-          <pre className="whitespace-pre-wrap text-xs text-muted-foreground font-sans leading-relaxed">
-            {getContractText(selectedPackage)}
-          </pre>
+        <div className="rounded-lg border bg-white dark:bg-muted/30 max-h-72 overflow-y-auto shadow-inner">
+          <ContractContent packageId={selectedPackage} />
         </div>
 
         {selectedPackage === 'basico' && (

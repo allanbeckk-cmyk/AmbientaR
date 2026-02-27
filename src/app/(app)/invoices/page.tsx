@@ -499,10 +499,12 @@ export default function InvoicesPage() {
     <>
         <div className="flex flex-col h-full">
         <PageHeader title="Faturas">
-            <Button size="sm" className="gap-1" onClick={handleAddNew}>
-            <PlusCircle className="h-4 w-4" />
-            Criar Fatura
-            </Button>
+            {(user?.role === 'admin' || user?.role === 'financial' || user?.role === 'supervisor') && (
+              <Button size="sm" className="gap-1" onClick={handleAddNew}>
+                <PlusCircle className="h-4 w-4" />
+                Criar Fatura
+              </Button>
+            )}
         </PageHeader>
         <main className="flex-1 overflow-auto p-4 md:p-6">
             <Card>
@@ -669,24 +671,28 @@ export default function InvoicesPage() {
                                     </TooltipTrigger>
                                     <TooltipContent><p>Exportar PDF</p></TooltipContent>
                                 </Tooltip>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button variant="ghost" size="icon" onClick={() => handleEdit(invoice)}>
-                                            <Pencil className="h-4 w-4" />
-                                            <span className="sr-only">Editar</span>
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent><p>Editar Fatura</p></TooltipContent>
-                                </Tooltip>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => openDeleteConfirm(invoice.id)}>
-                                            <Trash2 className="h-4 w-4" />
-                                            <span className="sr-only">Deletar</span>
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent><p>Deletar Fatura</p></TooltipContent>
-                                </Tooltip>
+                                {(user?.role === 'admin' || user?.role === 'financial' || user?.role === 'supervisor') && (
+                                  <>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button variant="ghost" size="icon" onClick={() => handleEdit(invoice)}>
+                                                <Pencil className="h-4 w-4" />
+                                                <span className="sr-only">Editar</span>
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent><p>Editar Fatura</p></TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => openDeleteConfirm(invoice.id)}>
+                                                <Trash2 className="h-4 w-4" />
+                                                <span className="sr-only">Deletar</span>
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent><p>Deletar Fatura</p></TooltipContent>
+                                    </Tooltip>
+                                  </>
+                                )}
                             </div>
                         </TableCell>
                     </TableRow>

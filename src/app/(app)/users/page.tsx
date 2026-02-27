@@ -28,7 +28,7 @@ import type { AppUser, AuditLog, CompanySettings } from '@/lib/types';
 import { useCollection, useMemoFirebase, errorEmitter, useFirebase, useDoc } from '@/firebase';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { collection, deleteDoc, doc, query, where, getDocs, orderBy } from 'firebase/firestore';
-import { fetchBrandingImageAsBase64 } from '@/lib/branding-pdf';
+import { fetchBrandingImageAsBase64, getImageDimensions, calcPdfImageSize } from '@/lib/branding-pdf';
 import { useLocalBranding } from '@/hooks/use-local-branding';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -230,8 +230,10 @@ export default function UsersPage() {
             let yPos = 15;
 
             if (headerBase64) {
-                doc.addImage(headerBase64, 'PNG', 10, 10, pageWidth - 20, 30);
-                yPos = 45;
+                const dims = await getImageDimensions(headerBase64);
+                const { w, h } = calcPdfImageSize(dims, pageWidth - 20, 30);
+                doc.addImage(headerBase64, 'PNG', 10, 10, w, h);
+                yPos = 10 + h + 5;
             }
 
             if (watermarkBase64) {
@@ -278,10 +280,12 @@ export default function UsersPage() {
             }
 
             if (footerBase64) {
+                const fDims = await getImageDimensions(footerBase64);
+                const { w: fw, h: fh } = calcPdfImageSize(fDims, pageWidth - 20, 20);
                 const totalPages = doc.getNumberOfPages();
                 for (let i = 1; i <= totalPages; i++) {
                     doc.setPage(i);
-                    doc.addImage(footerBase64, 'PNG', 10, pageHeight - 25, pageWidth - 20, 20);
+                    doc.addImage(footerBase64, 'PNG', 10, pageHeight - fh - 5, fw, fh);
                 }
             }
             

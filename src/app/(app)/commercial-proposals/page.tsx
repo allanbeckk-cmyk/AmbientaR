@@ -27,7 +27,7 @@ import { cn } from '@/lib/utils';
 import { useCollection, useFirebase, useMemoFirebase, errorEmitter, useDoc, useAuth } from '@/firebase';
 import { collection, doc, deleteDoc, query, where, updateDoc, getDoc, getDocs } from 'firebase/firestore';
 import * as React from 'react';
-import { fetchBrandingImageAsBase64 } from '@/lib/branding-pdf';
+import { fetchBrandingImageAsBase64, getImageDimensions, calcPdfImageSize } from '@/lib/branding-pdf';
 import type { CommercialProposal, Client, CompanySettings, Contract, EnvironmentalCompany } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -288,13 +288,18 @@ export default function CommercialProposalsPage() {
         const contentWidth = pageWidth - margins.left - margins.right;
         let yPos = margins.top;
 
+        const hDims = headerBase64 ? await getImageDimensions(headerBase64) : null;
+        const hSize = hDims ? calcPdfImageSize(hDims, contentWidth, 30) : null;
+        const fDims = footerBase64 ? await getImageDimensions(footerBase64) : null;
+        const fSize = fDims ? calcPdfImageSize(fDims, contentWidth, 20) : null;
+
         const addHeaderFooter = (docInstance: jsPDF) => {
              const pageCount = docInstance.getNumberOfPages();
              for (let i = 1; i <= pageCount; i++) {
                 docInstance.setPage(i);
-                if (headerBase64) {
+                if (headerBase64 && hSize) {
                     try {
-                        docInstance.addImage(headerBase64, 'PNG', margins.left, 10, contentWidth, 20);
+                        docInstance.addImage(headerBase64, 'PNG', margins.left, 10, hSize.w, hSize.h);
                     } catch(e) { console.error("Error adding header image to PDF", e); }
                 }
                 if (watermarkBase64) {
@@ -306,15 +311,15 @@ export default function CommercialProposalsPage() {
                         docInstance.addImage(watermarkBase64, 'PNG', (pageWidth - w) / 2, (pageHeight - h) / 2, w, h, undefined, 'FAST');
                     } catch(e) { console.error("Error adding watermark to PDF", e); }
                 }
-                if (footerBase64) {
+                if (footerBase64 && fSize) {
                     try {
-                        docInstance.addImage(footerBase64, 'PNG', margins.left, pageHeight - 20, contentWidth, 15);
+                        docInstance.addImage(footerBase64, 'PNG', margins.left, pageHeight - fSize.h - 5, fSize.w, fSize.h);
                     } catch(e) { console.error("Error adding footer image to PDF", e); }
                 }
              }
         };
 
-        yPos = headerBase64 ? 40 : 20;
+        yPos = headerBase64 && hSize ? 10 + hSize.h + 5 : 20;
         
         pdfDoc.setFontSize(18);
         pdfDoc.setFont('helvetica', 'bold');

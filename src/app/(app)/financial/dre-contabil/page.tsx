@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/table';
 import jsPDF from 'jspdf';
 import { useToast } from '@/hooks/use-toast';
-import { fetchBrandingImageAsBase64 } from '@/lib/branding-pdf';
+import { fetchBrandingImageAsBase64, getImageDimensions, calcPdfImageSize } from '@/lib/branding-pdf';
 import { useLocalBranding } from '@/hooks/use-local-branding';
 
 const currentYear = new Date().getFullYear();
@@ -127,8 +127,10 @@ export default function DreContabilPage() {
     const contentWidth = pageWidth - margin * 2;
     let y = 20;
     if (headerBase64) {
-      doc.addImage(headerBase64, 'PNG', margin, 10, contentWidth, 30);
-      y = 50;
+      const dims = await getImageDimensions(headerBase64);
+      const { w, h } = calcPdfImageSize(dims, contentWidth, 30);
+      doc.addImage(headerBase64, 'PNG', margin, 10, w, h);
+      y = 10 + h + 5;
     }
     if (watermarkBase64) {
       const imgProps = doc.getImageProperties(watermarkBase64);
@@ -164,7 +166,9 @@ export default function DreContabilPage() {
       y += 7;
     });
     if (footerBase64) {
-      doc.addImage(footerBase64, 'PNG', 10, pageHeight - 20, pageWidth - 20, 15);
+      const fDims = await getImageDimensions(footerBase64);
+      const { w: fw, h: fh } = calcPdfImageSize(fDims, pageWidth - 20, 20);
+      doc.addImage(footerBase64, 'PNG', 10, pageHeight - fh - 5, fw, fh);
     }
     doc.save(`DRE_Contabil_${selectedYear}.pdf`);
     toast({ title: 'PDF exportado', description: 'Arquivo DRE_Contabil_' + selectedYear + '.pdf' });

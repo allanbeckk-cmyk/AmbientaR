@@ -2,6 +2,44 @@
 
 import { getStorage, ref, getDownloadURL } from 'firebase/storage';
 
+export interface ImageDimensions {
+  width: number;
+  height: number;
+}
+
+/**
+ * Retorna as dimensões reais (em pixels) de uma imagem base64.
+ */
+export function getImageDimensions(base64: string): Promise<ImageDimensions> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+    img.onerror = () => resolve({ width: 0, height: 0 });
+    img.src = base64;
+  });
+}
+
+/**
+ * Calcula largura e altura para o PDF preservando a proporção original da imagem.
+ * A imagem nunca ultrapassa maxWidthMm. Se a altura calculada ultrapassar
+ * maxHeightMm, reduz proporcionalmente pela altura.
+ */
+export function calcPdfImageSize(
+  dims: ImageDimensions,
+  maxWidthMm: number,
+  maxHeightMm: number
+): { w: number; h: number } {
+  if (!dims.width || !dims.height) return { w: maxWidthMm, h: maxHeightMm };
+  const ratio = dims.width / dims.height;
+  let w = Math.min(dims.width * 0.264583, maxWidthMm); // px → mm (96dpi)
+  let h = w / ratio;
+  if (h > maxHeightMm) {
+    h = maxHeightMm;
+    w = h * ratio;
+  }
+  return { w, h };
+}
+
 /**
  * Converte uma imagem (URL pública ou caminho no Firebase Storage) em base64
  * para uso em PDFs (cabeçalho, rodapé, marca d'água).

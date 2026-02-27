@@ -26,7 +26,7 @@ import { MoreHorizontal, PlusCircle, Pencil, Trash2, Eye, FileText, CheckCircle,
 import { cn } from '@/lib/utils';
 import { useCollection, useFirebase, useMemoFirebase, errorEmitter, useDoc, useAuth } from '@/firebase';
 import { collection, doc, deleteDoc, query, where, updateDoc } from 'firebase/firestore';
-import { fetchBrandingImageAsBase64 } from '@/lib/branding-pdf';
+import { fetchBrandingImageAsBase64, getImageDimensions, calcPdfImageSize } from '@/lib/branding-pdf';
 import { useLocalBranding } from '@/hooks/use-local-branding';
 import type { Proposal, Client, CompanySettings, Contract } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -190,16 +190,16 @@ export default function ProposalsPage() {
         const margins = { top: 15, bottom: 25, left: 15, right: 15 };
         const contentWidth = pageWidth - margins.left - margins.right;
 
-        // Header: alinhado à esquerda, tamanho natural (sem esticar)
+        // Header: alinhado à esquerda, tamanho original preservado
+        let headerRenderedH = 0;
         if (headerBase64) {
-            const imgProps = doc.getImageProperties(headerBase64);
-            const aspectRatio = imgProps.width / imgProps.height;
-            const headerHeight = 25; // altura fixa em mm; largura proporcional
-            const headerWidth = headerHeight * aspectRatio;
-            doc.addImage(headerBase64, 'PNG', margins.left, 10, headerWidth, headerHeight, undefined, 'FAST');
+            const dims = await getImageDimensions(headerBase64);
+            const { w, h } = calcPdfImageSize(dims, contentWidth, 30);
+            doc.addImage(headerBase64, 'PNG', margins.left, 10, w, h, undefined, 'FAST');
+            headerRenderedH = h;
         }
 
-        let yPos = headerBase64 ? 45 : 22;
+        let yPos = headerBase64 ? 10 + headerRenderedH + 5 : 22;
 
         doc.setFontSize(18);
         doc.setFont('helvetica', 'bold');
@@ -279,9 +279,11 @@ export default function ProposalsPage() {
             }
         }
         if (footerBase64) {
+            const fDims = await getImageDimensions(footerBase64);
+            const { w: fw, h: fh } = calcPdfImageSize(fDims, pageWidth - 20, 20);
             for (let i = 1; i <= totalPages; i++) {
                 doc.setPage(i);
-                doc.addImage(footerBase64, 'PNG', 10, pageHeight - 20, pageWidth - 20, 15);
+                doc.addImage(footerBase64, 'PNG', 10, pageHeight - fh - 5, fw, fh);
             }
         }
 

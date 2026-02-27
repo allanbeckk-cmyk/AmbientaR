@@ -7,7 +7,7 @@ import { collection } from 'firebase/firestore';
 import type { Revenue, Expense, Client } from '@/lib/types';
 import jsPDF from 'jspdf';
 import { useToast } from '@/hooks/use-toast';
-import { fetchBrandingImageAsBase64 } from '@/lib/branding-pdf';
+import { fetchBrandingImageAsBase64, getImageDimensions, calcPdfImageSize } from '@/lib/branding-pdf';
 import { useLocalBranding } from '@/hooks/use-local-branding';
 import { CashFlowView } from './cash-flow-view';
 
@@ -116,8 +116,10 @@ export default function CashFlowPage() {
     const contentWidth = pageWidth - margin * 2;
     let y = 20;
     if (headerBase64) {
-      doc.addImage(headerBase64, 'PNG', margin, 10, contentWidth, 30);
-      y = 50;
+      const dims = await getImageDimensions(headerBase64);
+      const { w, h } = calcPdfImageSize(dims, contentWidth, 30);
+      doc.addImage(headerBase64, 'PNG', margin, 10, w, h);
+      y = 10 + h + 5;
     }
     if (watermarkBase64) {
       const imgProps = doc.getImageProperties(watermarkBase64);
@@ -167,10 +169,12 @@ export default function CashFlowPage() {
     doc.text('Total Despesas: ' + formatCurrency(expensesInPeriod.reduce((s, e) => s + e.amount, 0)), margin, y);
 
     if (footerBase64) {
+      const fDims = await getImageDimensions(footerBase64);
+      const { w: fw, h: fh } = calcPdfImageSize(fDims, pageWidth - 20, 20);
       const totalPages = doc.getNumberOfPages();
       for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
-        doc.addImage(footerBase64, 'PNG', 10, pageHeight - 20, pageWidth - 20, 15);
+        doc.addImage(footerBase64, 'PNG', 10, pageHeight - fh - 5, fw, fh);
       }
     }
     doc.save('lancamentos_caixa_' + periodLabel.replace(/-/g, '') + '.pdf');

@@ -5,6 +5,7 @@
 
 import type { Contract, CompanySettings } from '@/lib/types';
 import jsPDF from 'jspdf';
+import { getImageDimensions } from '@/lib/branding-pdf';
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -126,18 +127,45 @@ export async function generateContractPdf(
       doc.addImage(watermarkBase64, 'PNG', (pageWidth - w) / 2, (pageHeight - w / ar) / 2, w, w / ar, undefined, 'FAST');
   };
 
+  const hDims = headerBase64 ? await getImageDimensions(headerBase64) : null;
+  // px → cm: 1px = 0.026458 cm (96dpi)
+  const hSizeCm = hDims && hDims.width && hDims.height
+    ? (() => {
+        const maxW = pageWidth - ML - MR + 1;
+        const maxH = 2.5;
+        const ratio = hDims.width / hDims.height;
+        let w = Math.min(hDims.width * 0.026458, maxW);
+        let h = w / ratio;
+        if (h > maxH) { h = maxH; w = h * ratio; }
+        return { w, h };
+      })()
+    : null;
+
+  const fDims = footerBase64 ? await getImageDimensions(footerBase64) : null;
+  const fSizeCm = fDims && fDims.width && fDims.height
+    ? (() => {
+        const maxW = pageWidth - ML - MR + 1;
+        const maxH = 1.5;
+        const ratio = fDims.width / fDims.height;
+        let w = Math.min(fDims.width * 0.026458, maxW);
+        let h = w / ratio;
+        if (h > maxH) { h = maxH; w = h * ratio; }
+        return { w, h };
+      })()
+    : null;
+
   const addHeaderFooter = () => {
     const totalPages = doc.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       doc.setPage(i);
-      if (headerBase64) doc.addImage(headerBase64, 'PNG', MR, 1, pageWidth - ML - MR + 1, 2.2);
-      if (footerBase64) doc.addImage(footerBase64, 'PNG', MR, pageHeight - 1.5, pageWidth - ML - MR + 1, 1.2);
+      if (headerBase64 && hSizeCm) doc.addImage(headerBase64, 'PNG', MR, 0.5, hSizeCm.w, hSizeCm.h);
+      if (footerBase64 && fSizeCm) doc.addImage(footerBase64, 'PNG', MR, pageHeight - fSizeCm.h - 0.3, fSizeCm.w, fSizeCm.h);
     }
   };
 
   if (watermarkBase64) drawWatermarkOnCurrentPage();
 
-  let y = headerBase64 ? 3.8 : MT;
+  let y = headerBase64 && hSizeCm ? 0.5 + hSizeCm.h + 0.5 : MT;
 
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');

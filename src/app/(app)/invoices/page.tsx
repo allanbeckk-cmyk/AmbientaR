@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils';
 import { useCollection, useFirebase, useMemoFirebase, errorEmitter, useDoc, useAuth } from '@/firebase';
 import { collection, doc, deleteDoc, query, where, getDocs } from 'firebase/firestore';
 import * as React from 'react';
-import { fetchBrandingImageAsBase64 } from '@/lib/branding-pdf';
+import { fetchBrandingImageAsBase64, getImageDimensions, calcPdfImageSize } from '@/lib/branding-pdf';
 import { useLocalBranding } from '@/hooks/use-local-branding';
 import type { Invoice, Client, CompanySettings, Contract } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -281,8 +281,12 @@ export default function InvoicesPage() {
         const contentWidth = pageWidth - margins.left - margins.right;
 
         // Header
+        let headerH = 0;
         if (headerBase64) {
-            doc.addImage(headerBase64, 'PNG', margins.left, 10, contentWidth, 30);
+            const dims = await getImageDimensions(headerBase64);
+            const { w, h } = calcPdfImageSize(dims, contentWidth, 30);
+            doc.addImage(headerBase64, 'PNG', margins.left, 10, w, h);
+            headerH = h;
         }
         
         // Watermark
@@ -296,7 +300,7 @@ export default function InvoicesPage() {
             doc.addImage(watermarkBase64, 'PNG', x, y, watermarkWidth, watermarkHeight, undefined, 'FAST');
         }
         
-        let yPos = headerBase64 ? 50 : 20;
+        let yPos = headerBase64 ? 10 + headerH + 5 : 20;
 
         doc.setFontSize(18);
         doc.setFont('helvetica', 'bold');
@@ -387,10 +391,12 @@ export default function InvoicesPage() {
 
         // Footer
         if (footerBase64) {
+            const fDims = await getImageDimensions(footerBase64);
+            const { w: fw, h: fh } = calcPdfImageSize(fDims, pageWidth - 20, 20);
             const totalPages = doc.getNumberOfPages();
             for (let i = 1; i <= totalPages; i++) {
                 doc.setPage(i);
-                doc.addImage(footerBase64, 'PNG', 10, pageHeight - 20, pageWidth - 20, 15);
+                doc.addImage(footerBase64, 'PNG', 10, pageHeight - fh - 5, fw, fh);
             }
         }
 
@@ -412,8 +418,10 @@ export default function InvoicesPage() {
         const contentWidth = pageWidth - margin * 2;
         let y = 20;
         if (headerBase64) {
-            doc.addImage(headerBase64, 'PNG', margin, 10, contentWidth, 30);
-            y = 50;
+            const dims = await getImageDimensions(headerBase64);
+            const { w, h } = calcPdfImageSize(dims, contentWidth, 30);
+            doc.addImage(headerBase64, 'PNG', margin, 10, w, h);
+            y = 10 + h + 5;
         }
         if (watermarkBase64) {
             const imgProps = doc.getImageProperties(watermarkBase64);
@@ -457,10 +465,12 @@ export default function InvoicesPage() {
         doc.text(`Total: ${formatCurrency(total)} (${invoicesInPeriod.length} fatura(s))`, margin, y);
 
         if (footerBase64) {
+            const fDims = await getImageDimensions(footerBase64);
+            const { w: fw, h: fh } = calcPdfImageSize(fDims, pageWidth - 20, 20);
             const totalPages = doc.getNumberOfPages();
             for (let i = 1; i <= totalPages; i++) {
                 doc.setPage(i);
-                doc.addImage(footerBase64, 'PNG', 10, pageHeight - 20, pageWidth - 20, 15);
+                doc.addImage(footerBase64, 'PNG', 10, pageHeight - fh - 5, fw, fh);
             }
         }
         doc.save(`faturas_periodo_${periodLabel.replace(/-/g, '')}.pdf`);

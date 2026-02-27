@@ -15,7 +15,7 @@ import { collection, getDocs, query, where, doc, updateDoc, arrayUnion } from 'f
 import { Skeleton } from '@/components/ui/skeleton';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { fetchBrandingImageAsBase64 } from '@/lib/branding-pdf';
+import { fetchBrandingImageAsBase64, getImageDimensions, calcPdfImageSize } from '@/lib/branding-pdf';
 import { useLocalBranding } from '@/hooks/use-local-branding';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
@@ -140,8 +140,10 @@ export default function InspectionReportsListPage() {
     const footerBase64 = await fetchBrandingImageAsBase64(brandingData?.footerImageUrl);
     
     if (headerBase64) {
-        doc.addImage(headerBase64, 'PNG', 10, 10, pageWidth - 20, 25);
-        yPos = 40;
+        const dims = await getImageDimensions(headerBase64);
+        const { w, h } = calcPdfImageSize(dims, pageWidth - 20, 30);
+        doc.addImage(headerBase64, 'PNG', 10, 10, w, h);
+        yPos = 10 + h + 5;
     }
 
     doc.setFontSize(16);
@@ -179,7 +181,9 @@ export default function InspectionReportsListPage() {
         const totalPages = doc.getNumberOfPages();
         for (let i = 1; i <= totalPages; i++) {
             doc.setPage(i);
-            doc.addImage(footerBase64, 'PNG', 10, pageHeight - 25, pageWidth - 20, 15);
+            const fDims = await getImageDimensions(footerBase64);
+            const { w: fw, h: fh } = calcPdfImageSize(fDims, pageWidth - 20, 20);
+            doc.addImage(footerBase64, 'PNG', 10, pageHeight - fh - 5, fw, fh);
         }
     }
     

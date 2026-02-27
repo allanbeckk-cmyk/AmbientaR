@@ -14,6 +14,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { MaskedInput } from '@/components/ui/masked-input';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { TechnicalResponsible } from '@/lib/types';
@@ -132,7 +133,7 @@ export function ResponsibleForm({ currentItem, onSuccess, onCancel }: Responsibl
         <form onSubmit={form.handleSubmit(onSubmit)} className="h-full flex flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto pr-4 py-4 space-y-4">
           <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Nome Completo</FormLabel><FormControl><Input placeholder="Nome do profissional" {...field} /></FormControl><FormMessage /></FormItem>)} />
-          <FormField control={form.control} name="cpf" render={({ field }) => (<FormItem><FormLabel>CPF</FormLabel><FormControl><Input placeholder="000.000.000-00" {...field} /></FormControl><FormMessage /></FormItem>)} />
+          <FormField control={form.control} name="cpf" render={({ field }) => (<FormItem><FormLabel>CPF</FormLabel><FormControl><MaskedInput mask="cpf" placeholder="000.000.000-00" {...field} /></FormControl><FormMessage /></FormItem>)} />
           <div className="grid grid-cols-2 gap-4">
               <FormField control={form.control} name="identidade" render={({ field }) => (<FormItem><FormLabel>RG</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
               <FormField control={form.control} name="emissor" render={({ field }) => (<FormItem><FormLabel>Órgão Emissor</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />

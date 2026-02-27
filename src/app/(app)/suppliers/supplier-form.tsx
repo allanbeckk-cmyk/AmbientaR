@@ -14,6 +14,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { MaskedInput } from '@/components/ui/masked-input';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Fornecedor } from '@/lib/types';
@@ -208,13 +209,13 @@ export function SupplierForm({ currentItem, onSuccess, onCancel }: SupplierFormP
           render={({ field }) => (
             <FormItem>
               <FormLabel>CPF / CNPJ</FormLabel>
-              <FormControl><Input placeholder="00.000.000/0000-00" {...field} /></FormControl>
+              <FormControl><MaskedInput mask="cpfCnpj" placeholder="00.000.000/0000-00" {...field} /></FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField control={form.control} name="phone" render={({ field }) => ( <FormItem><FormLabel>Telefone</FormLabel><FormControl><Input placeholder="(XX) XXXXX-XXXX" {...field} /></FormControl><FormMessage /></FormItem> )} />
+            <FormField control={form.control} name="phone" render={({ field }) => ( <FormItem><FormLabel>Telefone</FormLabel><FormControl><MaskedInput mask="phone" placeholder="(XX) XXXXX-XXXX" {...field} /></FormControl><FormMessage /></FormItem> )} />
             <FormField control={form.control} name="email" render={({ field }) => ( <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" placeholder="contato@fornecedor.com" {...field} /></FormControl><FormMessage /></FormItem> )} />
         </div>
          <FormField

@@ -15,6 +15,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { MaskedInput } from '@/components/ui/masked-input';
 import { Loader2, CalendarIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Empreendedor } from '@/lib/types';
@@ -224,7 +225,7 @@ export function EmpreendedorForm({ currentItem, onSuccess, onCancel }: Empreende
                     <FormItem>
                     <FormLabel>CPF / CNPJ</FormLabel>
                     <FormControl>
-                        <Input placeholder="000.000.000-00 ou 00.000.000/0000-00" {...field} onChange={handleCpfCnpjChange} maxLength={18} />
+                        <MaskedInput mask="cpfCnpj" placeholder="000.000.000-00 ou 00.000.000/0000-00" {...field} />
                     </FormControl>
                     <FormMessage />
                     </FormItem>
@@ -358,7 +359,7 @@ export function EmpreendedorForm({ currentItem, onSuccess, onCancel }: Empreende
                     <FormField control={form.control} name="cep" render={({ field }) => ( <FormItem><FormLabel>CEP</FormLabel><FormControl><Input placeholder="00000-000" {...field} onChange={handleCepChange} maxLength={9} /></FormControl><FormMessage /></FormItem> )} />
                  </div>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="phone" render={({ field }) => ( <FormItem><FormLabel>Telefone (com DDD)</FormLabel><FormControl><Input placeholder="(XX) XXXXX-XXXX" {...field} onChange={handlePhoneChange} maxLength={15} /></FormControl><FormMessage /></FormItem> )} />
+                    <FormField control={form.control} name="phone" render={({ field }) => ( <FormItem><FormLabel>Telefone (com DDD)</FormLabel><FormControl><MaskedInput mask="phone" placeholder="(XX) XXXXX-XXXX" {...field} /></FormControl><FormMessage /></FormItem> )} />
                     <FormField control={form.control} name="email" render={({ field }) => ( <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" placeholder="email@exemplo.com" {...field} /></FormControl><FormMessage /></FormItem> )} />
                 </div>
             </div>

@@ -18,6 +18,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { MaskedInput } from '@/components/ui/masked-input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Leaf, ArrowLeft, ArrowRight, Check, Crown, Star, Zap, Rocket, Gift, MessageSquareMore } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -361,7 +362,7 @@ export default function RegisterPage() {
               <FormItem>
                 <FormLabel>Telefone</FormLabel>
                 <FormControl>
-                  <Input placeholder="(31) 99999-9999" {...field} />
+                  <MaskedInput mask="phone" placeholder="(31) 99999-9999" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -374,7 +375,7 @@ export default function RegisterPage() {
               <FormItem>
                 <FormLabel>CPF</FormLabel>
                 <FormControl>
-                  <Input placeholder="000.000.000-00" {...field} />
+                  <MaskedInput mask="cpf" placeholder="000.000.000-00" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

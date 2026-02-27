@@ -16,6 +16,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { MaskedInput } from '@/components/ui/masked-input';
 import {
   Select,
   SelectContent,
@@ -412,7 +413,7 @@ export function UserForm({ currentUser, onSuccess }: UserFormProps) {
                             <FormItem>
                             <FormLabel>CPF</FormLabel>
                             <FormControl>
-                                <Input placeholder="000.000.000-00" {...field} onChange={handleCpfChange} maxLength={14} />
+                                <MaskedInput mask="cpf" placeholder="000.000.000-00" {...field} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>

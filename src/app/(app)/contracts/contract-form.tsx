@@ -15,6 +15,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { MaskedInput } from '@/components/ui/masked-input';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, PlusCircle, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -292,7 +293,7 @@ export function ContractForm({ currentItem, onSuccess }: ContractFormProps) {
                                   </FormItem>
                               )} />
                               <FormField control={form.control} name="contratante.nome" render={({ field }) => (<FormItem><FormLabel>Nome</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                              <FormField control={form.control} name="contratante.cpfCnpj" render={({ field }) => (<FormItem><FormLabel>CPF/CNPJ</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                              <FormField control={form.control} name="contratante.cpfCnpj" render={({ field }) => (<FormItem><FormLabel>CPF/CNPJ</FormLabel><FormControl><MaskedInput mask="cpfCnpj" {...field} /></FormControl><FormMessage /></FormItem>)} />
                           </div>
                           <div className="p-4 border rounded-md space-y-4">
                               <h3 className="font-semibold">Contratado (Sua Empresa)</h3>

@@ -10,6 +10,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { MaskedInput } from '@/components/ui/masked-input';
 import {
   Select,
   SelectContent,
@@ -95,7 +96,7 @@ export function PiaFormInventario({ form, clients, isLoadingClients, projects, i
                             </SelectTrigger></FormControl><SelectContent>{clients?.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="requerente.nome" render={({ field }) => (<FormItem><FormLabel>Nome</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name="requerente.cpfCnpj" render={({ field }) => (<FormItem><FormLabel>CPF/CNPJ</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                        <FormField control={form.control} name="requerente.cpfCnpj" render={({ field }) => (<FormItem><FormLabel>CPF/CNPJ</FormLabel><FormControl><MaskedInput mask="cpfCnpj" {...field} /></FormControl><FormMessage /></FormItem>)} />
                     </div>
                      <div className="space-y-4 p-4 border rounded-md">
                         <h3 className="font-semibold text-base">Dados do proprietário do imóvel</h3>
@@ -105,7 +106,7 @@ export function PiaFormInventario({ form, clients, isLoadingClients, projects, i
                             </SelectTrigger></FormControl><SelectContent>{clients?.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="proprietario.nome" render={({ field }) => (<FormItem><FormLabel>Nome</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name="proprietario.cpfCnpj" render={({ field }) => (<FormItem><FormLabel>CPF/CNPJ</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                        <FormField control={form.control} name="proprietario.cpfCnpj" render={({ field }) => (<FormItem><FormLabel>CPF/CNPJ</FormLabel><FormControl><MaskedInput mask="cpfCnpj" {...field} /></FormControl><FormMessage /></FormItem>)} />
                     </div>
                     <div className="space-y-4 p-4 border rounded-md">
                         <h3 className="font-semibold text-base">Dados do imóvel rural e empreendimento</h3>
@@ -122,7 +123,7 @@ export function PiaFormInventario({ form, clients, isLoadingClients, projects, i
                     <div className="space-y-4 p-4 border rounded-md">
                         <h3 className="font-semibold text-base">Dados do responsável técnico pelo projeto</h3>
                         <FormField control={form.control} name="responsavelTecnico.nome" render={({ field }) => (<FormItem><FormLabel>Nome</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name="responsavelTecnico.cpf" render={({ field }) => (<FormItem><FormLabel>CPF</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                        <FormField control={form.control} name="responsavelTecnico.cpf" render={({ field }) => (<FormItem><FormLabel>CPF</FormLabel><FormControl><MaskedInput mask="cpf" {...field} /></FormControl><FormMessage /></FormItem>)} />
                         <FormField control={form.control} name="responsavelTecnico.email" render={({ field }) => (<FormItem><FormLabel>E-mail</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>)} />
                         <FormField control={form.control} name="responsavelTecnico.telefone" render={({ field }) => (<FormItem><FormLabel>Telefone</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                         <FormField control={form.control} name="responsavelTecnico.formacao" render={({ field }) => (<FormItem><FormLabel>Formação</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />

@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { MaskedInput } from '@/components/ui/masked-input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import type { AnaliseSocioambiental, InformacoesPropriedade, AgenteTerritorio } from '@/lib/types/analise-socioambiental';
@@ -303,7 +304,7 @@ export function AnaliseSocioambientalForm({ currentItem, clients, onSuccess, onC
             <FormField control={form.control} name="agenteDocumento" render={({ field }) => (
               <FormItem>
                 <FormLabel>CPF/CNPJ</FormLabel>
-                <FormControl><Input {...field} /></FormControl>
+                <FormControl><MaskedInput mask="cpfCnpj" {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />

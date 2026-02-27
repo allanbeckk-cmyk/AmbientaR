@@ -15,6 +15,7 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { MaskedInput } from '@/components/ui/masked-input';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { DispensaPEA, Empreendedor, TechnicalResponsible } from '@/lib/types';
@@ -240,7 +241,7 @@ export function DispensaForm({ currentItem, onSuccess, onCancel }: DispensaFormP
                 />
                 <FormField control={form.control} name="razaoSocialEmpreendedor" render={({ field }) => (<FormItem><FormLabel>Razão Social</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
                 <FormField control={form.control} name="nomeFantasiaEmpreendedor" render={({ field }) => (<FormItem><FormLabel>Nome Fantasia</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
-                <FormField control={form.control} name="cnpjEmpreendedor" render={({ field }) => (<FormItem><FormLabel>CPF/CNPJ</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
+                <FormField control={form.control} name="cnpjEmpreendedor" render={({ field }) => (<FormItem><FormLabel>CPF/CNPJ</FormLabel><FormControl><MaskedInput mask="cpfCnpj" {...field} /></FormControl></FormItem>)} />
                 <FormField control={form.control} name="logradouroEmpreendedor" render={({ field }) => (<FormItem><FormLabel>Logradouro</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
                 <FormField control={form.control} name="numeroEmpreendedor" render={({ field }) => (<FormItem><FormLabel>Número</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
                 <FormField control={form.control} name="complementoEmpreendedor" render={({ field }) => (<FormItem><FormLabel>Complemento</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
@@ -262,7 +263,7 @@ export function DispensaForm({ currentItem, onSuccess, onCancel }: DispensaFormP
             <CardContent className="space-y-4">
                 <FormField control={form.control} name="razaoSocial" render={({ field }) => (<FormItem><FormLabel>2.1 Razão Social</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
                 <FormField control={form.control} name="nomeFantasia" render={({ field }) => (<FormItem><FormLabel>2.2 Nome Fantasia</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
-                <FormField control={form.control} name="cnpj" render={({ field }) => (<FormItem><FormLabel>2.3 CNPJ</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
+                <FormField control={form.control} name="cnpj" render={({ field }) => (<FormItem><FormLabel>2.3 CNPJ</FormLabel><FormControl><MaskedInput mask="cnpj" {...field} /></FormControl></FormItem>)} />
                 
                 <h4 className="font-semibold text-base pt-4">2.4 Endereço Completo</h4>
                 <FormField control={form.control} name="logradouro" render={({ field }) => (<FormItem><FormLabel>2.4.1 Logradouro</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />

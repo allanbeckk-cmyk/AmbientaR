@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { MaskedInput } from '@/components/ui/masked-input';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -154,7 +155,7 @@ export function MonitoramentoForm() {
                         <h3 className="font-semibold text-base">1.1. Empreendedor</h3>
                         <FormField control={form.control} name="empreendedorId" render={({ field }) => ( <FormItem><FormLabel>Selecionar Empreendedor</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoadingEmpreendedores}><FormControl><SelectTrigger><SelectValue placeholder={isLoadingEmpreendedores ? "Carregando..." : "Selecione"} /></SelectTrigger></FormControl><SelectContent>{empreendedores?.map(e => <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)}/>
                         <FormField control={form.control} name="empreendedor.name" render={({ field }) => (<FormItem><FormLabel>Razão Social</FormLabel><FormControl><Input {...field} disabled /></FormControl></FormItem>)} />
-                        <FormField control={form.control} name="empreendedor.cpfCnpj" render={({ field }) => (<FormItem><FormLabel>CPF/CNPJ</FormLabel><FormControl><Input {...field} disabled /></FormControl></FormItem>)} />
+                        <FormField control={form.control} name="empreendedor.cpfCnpj" render={({ field }) => (<FormItem><FormLabel>CPF/CNPJ</FormLabel><FormControl><MaskedInput mask="cpfCnpj" {...field} disabled /></FormControl></FormItem>)} />
                         <FormField control={form.control} name="empreendedor.address" render={({ field }) => (<FormItem><FormLabel>Endereço</FormLabel><FormControl><Input {...field} disabled /></FormControl></FormItem>)} />
                         <FormField control={form.control} name="empreendedor.email" render={({ field }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} disabled /></FormControl></FormItem>)} />
                         <FormField control={form.control} name="empreendedor.phone" render={({ field }) => (<FormItem><FormLabel>Telefone</FormLabel><FormControl><Input {...field} disabled /></FormControl></FormItem>)} />
@@ -163,7 +164,7 @@ export function MonitoramentoForm() {
                         <h3 className="font-semibold text-base">1.2. Consultoria</h3>
                         <FormField control={form.control} name="consultoriaId" render={({ field }) => ( <FormItem><FormLabel>Selecionar Consultoria</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoadingConsultorias}><FormControl><SelectTrigger><SelectValue placeholder={isLoadingConsultorias ? "Carregando..." : "Selecione"} /></SelectTrigger></FormControl><SelectContent>{consultorias?.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)}/>
                         <FormField control={form.control} name="consultoria.name" render={({ field }) => (<FormItem><FormLabel>Razão Social</FormLabel><FormControl><Input {...field} disabled /></FormControl></FormItem>)} />
-                        <FormField control={form.control} name="consultoria.cnpj" render={({ field }) => (<FormItem><FormLabel>CNPJ</FormLabel><FormControl><Input {...field} disabled /></FormControl></FormItem>)} />
+                        <FormField control={form.control} name="consultoria.cnpj" render={({ field }) => (<FormItem><FormLabel>CNPJ</FormLabel><FormControl><MaskedInput mask="cnpj" {...field} disabled /></FormControl></FormItem>)} />
                         <FormField control={form.control} name="consultoria.address" render={({ field }) => (<FormItem><FormLabel>Endereço</FormLabel><FormControl><Input {...field} disabled /></FormControl></FormItem>)} />
                         <FormField control={form.control} name="consultoria.email" render={({ field }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} disabled /></FormControl></FormItem>)} />
                         <FormField control={form.control} name="consultoria.phone" render={({ field }) => (<FormItem><FormLabel>Telefone</FormLabel><FormControl><Input {...field} disabled /></FormControl></FormItem>)} />

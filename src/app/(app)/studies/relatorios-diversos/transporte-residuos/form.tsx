@@ -15,6 +15,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { MaskedInput } from '@/components/ui/masked-input';
 import { Loader2, PlusCircle, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirebase, errorEmitter, useCollection, useMemoFirebase } from '@/firebase';
@@ -251,7 +252,7 @@ export function TransporteResiduosForm({ onSuccess, onCancel }: TransporteResidu
                     </FormItem>
                 )} />
                 <FormField control={form.control} name="empreendedor.nome" render={({ field }) => ( <FormItem><FormLabel>Nome</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
-                <FormField control={form.control} name="empreendedor.cnpjCpf" render={({ field }) => (<FormItem><FormLabel>CNPJ/CPF</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="empreendedor.cnpjCpf" render={({ field }) => (<FormItem><FormLabel>CNPJ/CPF</FormLabel><FormControl><MaskedInput mask="cpfCnpj" {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={form.control} name="empreendedor.endereco" render={({ field }) => (<FormItem><FormLabel>Endereço</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={form.control} name="empreendedor.telefone" render={({ field }) => (<FormItem><FormLabel>Telefone</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={form.control} name="empreendedor.email" render={({ field }) => (<FormItem><FormLabel>E-mail</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>)} />
@@ -289,7 +290,7 @@ export function TransporteResiduosForm({ onSuccess, onCancel }: TransporteResidu
                  <FormField control={form.control} name="empresaResponsavel.razaoSocial" render={({ field }) => ( <FormItem><FormLabel>Razão Social</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                  <FormField control={form.control} name="empresaResponsavel.endereco" render={({ field }) => ( <FormItem><FormLabel>Endereço</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                 <div className="grid grid-cols-2 gap-4">
-                    <FormField control={form.control} name="empresaResponsavel.cnpjCpf" render={({ field }) => ( <FormItem><FormLabel>CNPJ/CPF</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                    <FormField control={form.control} name="empresaResponsavel.cnpjCpf" render={({ field }) => ( <FormItem><FormLabel>CNPJ/CPF</FormLabel><FormControl><MaskedInput mask="cpfCnpj" {...field} /></FormControl><FormMessage /></FormItem> )} />
                     <FormField control={form.control} name="empresaResponsavel.telefone" render={({ field }) => ( <FormItem><FormLabel>Telefone</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                 </div>
                  <FormField control={form.control} name="empresaResponsavel.email" render={({ field }) => ( <FormItem><FormLabel>E-mail</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem> )} />

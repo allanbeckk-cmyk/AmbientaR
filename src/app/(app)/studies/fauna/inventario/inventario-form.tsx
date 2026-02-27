@@ -16,6 +16,7 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { MaskedInput } from '@/components/ui/masked-input';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -198,7 +199,7 @@ export function InventarioFaunaForm({ currentItem, onSave }: InventarioFaunaForm
                     )}
                     />
                     <FormField control={form.control} name="empreendedor.name" render={({ field }) => (<FormItem><FormLabel>Razão Social</FormLabel><FormControl><Input {...field} disabled /></FormControl></FormItem>)} />
-                    <FormField control={form.control} name="empreendedor.cpfCnpj" render={({ field }) => (<FormItem><FormLabel>CPF/CNPJ</FormLabel><FormControl><Input {...field} disabled /></FormControl></FormItem>)} />
+                    <FormField control={form.control} name="empreendedor.cpfCnpj" render={({ field }) => (<FormItem><FormLabel>CPF/CNPJ</FormLabel><FormControl><MaskedInput mask="cpfCnpj" {...field} disabled /></FormControl></FormItem>)} />
                     <FormField control={form.control} name="empreendedor.address" render={({ field }) => (<FormItem><FormLabel>Endereço</FormLabel><FormControl><Input {...field} disabled /></FormControl></FormItem>)} />
                     <FormField control={form.control} name="empreendedor.email" render={({ field }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} disabled /></FormControl></FormItem>)} />
                     <FormField control={form.control} name="empreendedor.phone" render={({ field }) => (<FormItem><FormLabel>Telefone</FormLabel><FormControl><Input {...field} disabled /></FormControl></FormItem>)} />
@@ -224,7 +225,7 @@ export function InventarioFaunaForm({ currentItem, onSave }: InventarioFaunaForm
                     )}
                     />
                     <FormField control={form.control} name="consultoria.name" render={({ field }) => (<FormItem><FormLabel>Razão Social</FormLabel><FormControl><Input {...field} disabled /></FormControl></FormItem>)} />
-                    <FormField control={form.control} name="consultoria.cnpj" render={({ field }) => (<FormItem><FormLabel>CNPJ</FormLabel><FormControl><Input {...field} disabled /></FormControl></FormItem>)} />
+                    <FormField control={form.control} name="consultoria.cnpj" render={({ field }) => (<FormItem><FormLabel>CNPJ</FormLabel><FormControl><MaskedInput mask="cnpj" {...field} disabled /></FormControl></FormItem>)} />
                     <FormField control={form.control} name="consultoria.address" render={({ field }) => (<FormItem><FormLabel>Endereço</FormLabel><FormControl><Input {...field} disabled /></FormControl></FormItem>)} />
                     <FormField control={form.control} name="consultoria.email" render={({ field }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} disabled /></FormControl></FormItem>)} />
                     <FormField control={form.control} name="consultoria.phone" render={({ field }) => (<FormItem><FormLabel>Telefone</FormLabel><FormControl><Input {...field} disabled /></FormControl></FormItem>)} />

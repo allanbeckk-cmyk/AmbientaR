@@ -9,6 +9,7 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { MaskedInput } from '@/components/ui/masked-input';
 import {
   Select,
   SelectContent,
@@ -204,7 +205,7 @@ export function FormDefault({ form, clients, isLoadingClients }: FormDefaultProp
                             <SelectContent>{clients?.map(client => ( <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem> ))}</SelectContent>
                         </Select><FormMessage /></FormItem>
                     )} />
-                    <FormItem><FormLabel>CPF/CNPJ</FormLabel><Input disabled value={clientsMap.get(selectedClientId)?.cpfCnpj || ''} /></FormItem>
+                    <FormItem><FormLabel>CPF/CNPJ</FormLabel><MaskedInput mask="cpfCnpj" disabled value={clientsMap.get(selectedClientId)?.cpfCnpj || ''} /></FormItem>
                 </div>
                 <FormField control={form.control} name="ownerCondition" render={() => (
                     <FormItem><FormLabel>Condição do Empreendedor</FormLabel>
